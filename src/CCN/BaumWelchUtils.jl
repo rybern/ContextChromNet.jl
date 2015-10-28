@@ -1,5 +1,7 @@
 module BaumWelchUtils
-export force_pos_def, labels_to_gamma, gamma_to_labels, transpose!
+export force_pos_def, labels_to_gamma, gamma_to_labels, transpose!, model_to_networks
+
+using HMMTypes
 
 function force_pos_def(m)
     if(!isposdef(m))
@@ -30,6 +32,10 @@ end
 function gamma_to_labels (gamma :: Array{Float64, 2})
     n = size(gamma, 2)
     [indmax(gamma[:, i]) for i = 1:n]
+end
+
+function model_to_networks (model :: HMMStateModel)
+    [inv(cholfact(cov(state.dist))) for state = model.states]
 end
 
 ## Transpose ##

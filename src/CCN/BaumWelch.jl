@@ -11,19 +11,36 @@ using SharedEmissions
 using ArrayViews
 
 function toy()
-    data = rand(3, 10)
+    data = rand(3, 100)
     k = 2
-    (estimate, model, ll) = baum_welch(data, k, is_converged = ll_convergence(.01))
+    (estimate, model, ll) = baum_welch(10, data, k, is_converged = ll_convergence(.01), verbose = Nothing)
     labels = gamma_to_labels(estimate.gamma)
+    (labels, ll)
 end
 
-function baum_welch{N <: Number} (data :: Array{N, 2},
+function baum_welch (num_runs :: Integer,
+                     args...;
+                     verbose = true,
+                     kwargs...)
+    function run(i)
+        if verbose != Nothing
+            println("run #$(i)")
+            baum_welch(args...; verbose = 1, kwargs...)
+        else
+            baum_welch(args...; verbose = Nothing, kwargs...)
+        end
+    end
+
+    runs = map(run, 1:num_runs)
+
+    sort!(runs, by = run -> run[3], rev = true)
+    runs[1]
+end
+
+function baum_welch{N <: Number} (data :: DenseArray{N, 2},
                     k :: Integer,
-                    # fit_emissions :: data -> gamma -> State
-                    fit_emissions = fit_full_cov :: Function,
-                    # emission_pdf :: data -> gamma -> log probability
-                    emission_pdf = dist_log_pdf :: Function;
-                    # intial_model :: (states, transition)
+                    fit_emissions = fit_full_cov :: Function, # data -> gamma -> State
+                    emission_log_pdf = dist_log_pdf :: Function;#data-> weights -> log probability
                     initial_model = HMMStateModel(fit_states_to_labels(rand(1:k, size(data, 2)),
                                                                        k,
                                                                        data,
@@ -33,7 +50,8 @@ function baum_welch{N <: Number} (data :: Array{N, 2},
                     #                 gamma, states, ll,
                     #                 iteration ->
                     #                 Bool
-                    is_converged = iteration_convergence(5) :: Function)
+                    is_converged = iteration_convergence(5) :: Function,
+                    verbose = 0)
 
     data = convert(SharedArray, data)
 
@@ -41,19 +59,19 @@ function baum_welch{N <: Number} (data :: Array{N, 2},
                        size(data, 1), 
                        k)
 
-    emissionsFlipped = SharedArray(Float64, spec.n, spec.k)
+    emissions_flipped = SharedArray(Float64, spec.n, spec.k)
     emissions = SharedArray(Float64, spec.k, spec.n)
-    function emissionFn(t)
+    function emission_log_density(t)
         view(emissions, :, t)
     end
 
-    updateEmissions!(emission_pdf, initial_model.states, data, emissions, emissionsFlipped)
+    updateEmissions!(emission_log_pdf, initial_model.states, data, emissions, emissions_flipped)
 
     initial = ones(k) / k
-    logInitial = eln_arr(initial)
+    log_initial = eln_arr(initial)
 
     transition = initial_model.trans
-    logTransition = eln_arr(transition)
+    log_transition = eln_arr(transition)
 
     oldStates = initial_model.states
     oldLL = -Inf
@@ -62,136 +80,147 @@ function baum_welch{N <: Number} (data :: Array{N, 2},
 
     iteration = 1;
     while true
-        (fwd, bwd, newGammaPromise) = bw_e_step(spec, logTransition, emissionFn, logInitial)
+        (log_alpha, log_beta, newGammaPromise) = bw_e_step(spec,
+                                                log_transition,
+                                                emission_log_density,
+                                                log_initial)
 
         (newTransition, newInitial, newStates) = bw_m_step(spec,
-                                                                logTransition, 
-                                                                emissionFn, 
-                                                                fit_emissions,
-                                                                oldStates,
-                                                                data,
-                                                                fwd,
-                                                                bwd,
-                                                                newGammaPromise)
+                                                           log_transition, 
+                                                           emission_log_density, 
+                                                           fit_emissions,
+                                                           oldStates,
+                                                           data,
+                                                           log_alpha,
+                                                           log_beta,
+                                                           newGammaPromise)
 
         newGamma = fetch(newGammaPromise)
 
-        ll = logLikelihood(spec, fwd)
+        ll = logLikelihood(log_alpha)
 
         converged = iteration != 1 && is_converged(oldGamma, oldStates, oldLL,
                                                    newGamma, newStates, ll,
                                                    iteration)
 
-        updateEmissions!(emission_pdf, newStates, data, emissions, emissionsFlipped)
+        updateEmissions!(emission_log_pdf, newStates, data, emissions, emissions_flipped)
 
         initial = newInitial
-        logInitial = eln_arr(initial)
+        log_initial = eln_arr(initial)
 
         transition = newTransition
-        logTransition = eln_arr(transition)
+        log_transition = eln_arr(transition)
         
         oldStates = newStates
         oldGamma = newGamma
 
         oldLL = ll
 
-        println("iteration $iteration: log-likelihood $ll")
+        if verbose != Nothing
+            head = join(["\t" for i=1:verbose], "")
+            println("$(head)iteration $iteration: log-likelihood $ll")
+        end
 
         converged && break
         
         iteration = iteration + 1
     end
 
-    (HMMEstimate(initial, oldGamma), HMMStateModel(oldStates, transition), ll)
+    (HMMEstimate(oldGamma), HMMStateModel(oldStates, transition), ll)
 
 end
 
 
-function logLikelihood(spec,
-                       data,
+function logLikelihood(data, 
+                       k,
                        model,
-                       logEmissionDist,
-                       initial = vec(ones(spec.k) / spec.k))
+                       emission_log_pdf)
+    (p, n) = size(data)
+    spec = ProblemSpec(n, p, k)
 
-    logTransition = eln_arr(model.trans);
+    initial = ones(k) / k
+    log_initial = log(initial);
+
+    log_transition = eln_arr(model.trans);
 
     data = convert(SharedArray, data)
-    emissionsFlipped = SharedArray(Float64, spec.n, spec.k)
+
+    emissions_flipped = SharedArray(Float64, spec.n, spec.k)
     emissions = SharedArray(Float64, spec.k, spec.n)
-    function emissionFn(t)
+    updateEmissions!(emission_log_pdf, model.states, data, emissions, emissions_flipped)
+    
+    function emission_log_density(t)
         view(emissions, :, t)
     end
 
-    updateEmissions!(logEmissionDist, model.states, data, emissions, emissionsFlipped)
-    logInitial = log(initial);
+    log_alpha = forward(spec, log_transition, emission_log_density, log_initial);
 
-    fwd = forward(spec, logTransition, emissionFn, logInitial);
-   
-    # sum of the probabilities of the paths converging to the final
-    # state: the transition from any state to the final states is
-    # uniform
-    logLikelihood(spec, fwd)
+    logLikelihood(log_alpha)
 end
 
-function logLikelihood(spec, logAlpha)
-    elnsum_arr(logAlpha[end, :]) - log(spec.p);
+function logLikelihood(log_alpha :: Array{Float64, 2}) # k x n
+    # sum of the probabilities of the paths
+    elnsum_arr(log_alpha[:, end]);
 end
 
 
-function bw_e_step(spec, logTransition, logEmission, logInitial)
-    fwd_thread = @spawn forward(spec, logTransition, logEmission, logInitial)
-    bwd = backward(spec, logTransition, logEmission)
-    fwd = fetch(fwd_thread)
-    gmaPromise = @spawn gamma(spec, fwd, bwd)
+function bw_e_step(spec :: ProblemSpec,
+                   log_transition :: Array{Float64, 2},
+                   emission_log_density :: Function, # Int -> log pdf
+                   log_initial :: Array{Float64, 1})
+    log_alpha_thread = @spawn forward(spec, log_transition, emission_log_density, log_initial)
+    log_beta = backward(spec, log_transition, emission_log_density)
+    log_alpha = fetch(log_alpha_thread)
+    gamma_promiseise = @spawn gamma(spec, log_alpha, log_beta)
 
-    (fwd, bwd, gmaPromise)
+    (log_alpha, log_beta, gamma_promiseise)
 end
 
 function backward(spec,
-                  logTransition,
-                  logEmission)
+                  log_transition,
+                  emission_log_density)
 
-    logBeta = Array(Float64, spec.k, spec.n);
+    log_beta = Array(Float64, spec.k, spec.n);
 
-    logBeta[:, spec.n] = 0;
+    log_beta[:, spec.n] = 0;
 
     for t = spec.n-1:-1:1
-        nextDist = logEmission(t+1) + logBeta[:, t+1]
+        nextDist = emission_log_density(t+1) + log_beta[:, t+1]
         for i = 1:spec.k
-            elems = logTransition[i, :]' + nextDist
-            logBeta[i, t] = elnsum_arr(elems)
+            elems = log_transition[i, :]' + nextDist
+            log_beta[i, t] = elnsum_arr(elems)
         end
     end
 
-    logBeta
+    log_beta
 end
 
 function forward(spec, 
-                 logTransition,
-                 logEmission,
-                 logInitial)
+                 log_transition,
+                 emission_log_density,
+                 log_initial)
 
-    logAlpha = Array(Float64, spec.k, spec.n);
+    log_alpha = Array(Float64, spec.k, spec.n);
 
-    em = logEmission(1);
+    em = emission_log_density(1);
 
-    logAlpha[:, 1] = logInitial + em
+    log_alpha[:, 1] = log_initial + em
 
     for t = 2:spec.n
-        logAlpha[:, t] = logEmission(t)
+        log_alpha[:, t] = emission_log_density(t)
         for i = 1:spec.k
-            elems = logTransition[:, i] + logAlpha[:, t-1]
-            logAlpha[i, t] += elnsum_arr(elems)
+            elems = log_transition[:, i] + log_alpha[:, t-1]
+            log_alpha[i, t] += elnsum_arr(elems)
         end
     end
 
-    logAlpha
+    log_alpha
 end
 
-function gamma(spec, logAlpha, logBeta)
+function gamma(spec, log_alpha, log_beta)
     gma = Array(Float64, spec.k, spec.n)
 
-    innerProducts = logAlpha + logBeta
+    innerProducts = log_alpha + log_beta
 
     for t = 1:spec.n
         gma[:, t] = eexp_arr(innerProducts[:, t] - elnsum_arr(innerProducts[:, t]))
@@ -200,25 +229,40 @@ function gamma(spec, logAlpha, logBeta)
     gma
 end
 
-function bw_m_step(spec, logTransition, logEmission, updateStates, states, data, fwd, bwd, gmaProm)
-    newTransition = updateTransitionMatrix(spec, logTransition, logEmission, fwd, bwd, gmaProm)
-    gma = fetch(gmaProm)
+function bw_m_step {N <: Number} (spec :: ProblemSpec,
+                   log_transition :: Array{Float64, 2},
+                   emission_log_density :: Function, # Int -> log pdf
+                   fit_emissions :: Function, # data -> weights -> old_states -> new_states
+                   states :: Array{HMMState, 1},
+                   data :: AbstractArray{N, 2},
+                   log_alpha :: Array{Float64, 2},
+                   log_beta :: Array{Float64, 2},
+                   gamma_promise) # promise of Array{Float, 2}
+
+    newTransition = updateTransitionMatrix(spec,
+                                           log_transition,
+                                           emission_log_density,
+                                           log_alpha,
+                                           log_beta,
+                                           gamma_promise)
+
+    gma = fetch(gamma_promise)
     newInitial = gma[:, 1]
-    newStates = updateStates(data, gma, states);
+    newStates = fit_emissions(data, gma, states);
     
     (newTransition, newInitial, newStates)
 end
 
 function updateTransitionMatrix(spec,
-                                logTransition,
-                                logEmission,
-                                logAlpha,
-                                logBeta,
+                                log_transition,
+                                emission_log_density,
+                                log_alpha,
+                                log_beta,
                                 gammaPromise)
 
     logEpsSum = @parallel (x, y)->map(elnsum, x, y) for t = 1:spec.n-1
         # accumulate the log of sums using elnsum
-        logEpsT(spec, logTransition, logEmission, logAlpha, logBeta, t)
+        logEpsT(spec, log_transition, emission_log_density, log_alpha, log_beta, t)
     end
 
     epsSum = map(eexp, logEpsSum)
@@ -233,32 +277,33 @@ function updateTransitionMatrix(spec,
 end
 
 function logEpsT(spec, 
-                 logTransition,
-                 logEmission,
-                 logAlpha,
-                 logBeta,
+                 log_transition,
+                 emission_log_density,
+                 log_alpha,
+                 log_beta,
                  t)
 
-    logBetaWeighted = reshape(logBeta[:, t+1] + logEmission(t+1), (1, spec.k))
+    log_betaWeighted = reshape(log_beta[:, t+1] + emission_log_density(t+1), (1, spec.k))
     
     # (1 x k) .+ (k x k) .+ (k x 1)
     # the former is added to the matrix by repeating rows
     # the latter by repeating columns
-    numerator = logBetaWeighted .+ logTransition .+ logAlpha[:, t];
-    normalizer = elnsum_arr(logAlpha[:, t] + logBeta[:, t])
+    numerator = log_betaWeighted .+ log_transition .+ log_alpha[:, t];
+    normalizer = elnsum_arr(log_alpha[:, t] + log_beta[:, t])
 
     numerator - normalizer
 end
 
 
 
-function updateEmissions!(logEmissionDist, states, data, emissions, emissionsFlipped)
-    parallel_emissions!(data, emissions, emissionsFlipped, states, logEmissionDist)
+function updateEmissions!(emission_log_pdf, states, data, emissions, emissions_flipped)
+    parallel_emissions!(data, emissions, emissions_flipped, states, emission_log_pdf)
 end
 
 function fit_states_to_labels{N <: Number} (labels :: Array{Int, 1},
                                             k :: Integer,
                                             data :: Array{N, 2},
+                                            # data -> weights -> new_states
                                             fit_emissions :: Function)
     fit_emissions(data, labels_to_gamma(labels, k))
 end

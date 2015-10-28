@@ -28,7 +28,6 @@ immutable HMMCentroidModel
 end
 
 immutable HMMEstimate
-    init :: Array{Float64, 1}
     gamma :: Array{Float64, 2}
 end
 

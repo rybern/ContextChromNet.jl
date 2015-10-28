@@ -1,8 +1,6 @@
 module ExtendedLogs
 
-export logzero, eexp, eln, elnsum, elnsum, eln_arr, eexp_arr, eln, elnsum_arr, elnsum_arr#, parallel_emissions
-
-#using ArrayViews
+export logzero, eexp, eln, elnsum, elnsum, eln_arr, eexp_arr, eln, elnsum_arr, elnsum_arr
 
 logzero = NaN
 
@@ -51,16 +49,5 @@ end
 function elnprod_arr(v)
     sum(v)
 end
-   
-function a()
-    println(1, 2, 3)
-    4 + 5
-end
-
-@everywhere function a()
-    println(1, 2, 3)
-    4 + 5
-end
-
 
 end

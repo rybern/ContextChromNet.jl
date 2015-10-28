@@ -44,7 +44,6 @@ function ll_convergence (max_percent_change)
                         newGamma, newStates, newLL,
                         iteration)
         percent_changed = abs((newLL - oldLL) / oldLL)
-        println(percent_changed)
         percent_changed < max_percent_change || oldLL > newLL
     end
 end
