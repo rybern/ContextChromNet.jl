@@ -10,7 +10,11 @@ using StatsBase
 using Memoize
 
 
-function rand_HMM_model(p, k; avg_range = .1, sparsity = .3, dwell_prob = .5)
+function rand_HMM_model(p :: Integer,
+                        k :: Integer;
+                        avg_range = .1,
+                        sparsity = .3,
+                        dwell_prob = .5)
     dists = Array(MvNormal, k)
     for i = 1:k
         mu = rand(p) * avg_range - avg_range/2;

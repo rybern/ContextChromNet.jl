@@ -92,7 +92,7 @@ function evaluate_measures (# data, true_lables,
     if repeat != Nothing
         function repeat_evaluate(i)
             if verbose 
-                println("Iteration $i")
+                println("\tIteration $i/$repeat")
             end
             
             evaluate_measures(validation_measure, model_optimizer,
@@ -161,9 +161,9 @@ function evaluate_measures(validation_measures :: Array{Function},
                            kwargs...)
     seed = 1
 
-    function evaluate_optimizer (optimizer)
+    function evaluate_optimizer (optimizer_ix)
         if verbose
-            println("Next model optimizer...")
+            println("Model optimizer $optimizer_ix/$(length(model_optimizers))")
         end
 
         # each optimizer should get the same data
@@ -171,13 +171,13 @@ function evaluate_measures(validation_measures :: Array{Function},
         seed += 1
 
         evaluate_measures(validation_measures,
-                            optimizer,
-                            args...;
-                            kwargs...)
+                          model_optimizers[optimizer_ix],
+                          args...;
+                          kwargs...)
     end
 
-    [evaluate_optimizer(optimizer)
-     for optimizer = model_optimizers]
+    [evaluate_optimizer(ix)
+     for ix = 1:length(model_optimizers)]
 end
 
 function evaluate_measures(validation_measures :: Array{Function},
@@ -186,20 +186,20 @@ function evaluate_measures(validation_measures :: Array{Function},
                            args...;
                            verbose = true,
                            kwargs...)
-    function evaluate_generator (data_generator)
+    function evaluate_generator (data_generator_ix)
         if verbose
-            println("Next generator...")
+            println("Generator $data_generator_ix/$(length(data_generators))")
         end
 
         evaluate_measures(validation_measures,
                           model_optimizers,
-                          data_generator,
+                          data_generators[data_generators_ix],
                           args...;
                           kwargs...)  
     end 
 
-    [evaluate_generator(data_generator)
-     for data_generator = data_generators]                     
+    [evaluate_generator(ix)
+     for ix = 1:length(data_generators)]                     
 end
 
 end
