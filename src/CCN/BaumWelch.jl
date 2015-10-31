@@ -1,5 +1,5 @@
 module BaumWelch
-export baum_welch
+export baum_welch, log_likelihood
 
 using BaumWelchConvergence
 using BaumWelchUtils
@@ -97,7 +97,7 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
 
         newGamma = fetch(newGammaPromise)
 
-        ll = logLikelihood(log_alpha)
+        ll = log_likelihood(log_alpha)
 
         converged = iteration != 1 && is_converged(oldGamma, oldStates, oldLL,
                                                    newGamma, newStates, ll,
@@ -131,7 +131,7 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
 end
 
 
-function logLikelihood(data, 
+function log_likelihood(data, 
                        k,
                        model,
                        emission_log_pdf)
@@ -155,10 +155,10 @@ function logLikelihood(data,
 
     log_alpha = forward(spec, log_transition, emission_log_density, log_initial);
 
-    logLikelihood(log_alpha)
+    log_likelihood(log_alpha)
 end
 
-function logLikelihood(log_alpha :: Array{Float64, 2}) # k x n
+function log_likelihood(log_alpha :: Array{Float64, 2}) # k x n
     # sum of the probabilities of the paths
     elnsum_arr(log_alpha[:, end]);
 end

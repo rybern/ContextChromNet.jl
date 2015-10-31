@@ -118,10 +118,11 @@ function rand_cov(p, sparsity)
     normalize_determinant(B)
 end
 
-function mat_sparsity (m, eps = 10e-8)
+# TODO only measure sparsity of off-diags
+function mat_sparsity (m; eps = 10e-6)
     p = size(m, 1)
-    num_zero = length(filter(x -> x < eps, m))
-    num_zero / (p*p)
+    num_zero = length(filter(x -> x < eps, m + eye(p)))
+    num_zero / (p*p-p)
 end
 
 function normalize_determinant(m :: Array{Float64, 2}, to = 1)
@@ -148,18 +149,20 @@ function sparsify_rand(generator, sparify, valid)
     result
 end
 
+# TODO only measure sparsity of off-diags
 @memoize function sparsify_mat(m, sparsity, valid)
-    s = size(M)[1] * size(M)[2];
+    p = size(m, 1)
+    s = p * p - p;
     nzeros = s * sparsity;
 
     for i = 1:nzeros/2
-        M = zero_rand_offdiag(M, valid);
-        if (M == false)
+        m = zero_rand_offdiag(m, valid);
+        if (m == false)
             return false
         end
     end
     
-    return M
+    m
 end
 
 function sparsify_rand(generator, sparsity, valid)

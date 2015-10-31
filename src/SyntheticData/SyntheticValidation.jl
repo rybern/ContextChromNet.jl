@@ -7,50 +7,92 @@ using StateMatching
 using BaumWelch
 using SyntheticData
 using EmissionDistributions
+using BaumWelchUtils
+
+function ll_test()
+    train_n = 10000
+    holdout_n = 10000
+
+    data_all, labels_all, true_model = rand_HMM_data(train_n + holdout_n,
+                                                     5,
+                                                     5)
+    data_train = data_all[:, 1:train_n]
+    data_holdout = data_all[:, train_n+1:end]
+    labels_train = labels_all[1:train_n]
+    labels_holdout = labels_all[train_n+1:end]
+
+
+
+    estimate, found_model, train_returned_ll = baum_welch(5, data_train, 5)
+
+    train_true_ll = log_likelihood(data_train, 5, true_model, dist_log_pdf)
+    train_found_ll = log_likelihood(data_train, 5, found_model, dist_log_pdf)
+    holdout_true_ll = log_likelihood(data_holdout, 5, true_model, dist_log_pdf)
+    holdout_found_ll = log_likelihood(data_holdout, 5, found_model, dist_log_pdf)
+
+    train_returned_ll, train_found_ll, train_true_ll, holdout_found_ll, holdout_true_ll
+end
 
 function toy()
-    model = [baum_welch, baum_welch]
-    val = [hard_label_accuracy_measure,
+    model = [baum_welch]
+    val = [network_enrichment_measure,
            hard_network_edge_accuracy_measure]
     evaluate_measures(val, model, repeat = 3)
 end
 
 function toy2()
-    run_synth_validation(emission_fitters = [fit_glasso, fit_full_cov],
-                         validations = [hard_label_accuracy_measure],
+    run_synth_validation(emission_fitters = [fit_full_cov, Nothing],
+                         validations = [hard_label_accuracy_measure,
+                                        hard_network_edge_accuracy_measure,
+                                        test_loglikelihood_measure,
+                                        train_loglikelihood_measure,
+                                        network_enrichment_measure],
                          sparsities = [.5],
-                         repeat = 2,
+                         repeat = Nothing,
                          model_verbose = false)
 end
 
 function toy3()
     run_synth_validation("saved_outputs/synthetic:gen-model-measure-iter.dump",
-                         emission_fitters = [fit_full_cov],
-                         validations = [hard_label_accuracy_measure],
+                         emission_fitters = [fit_full_cov, Nothing],
+                         validations = [hard_label_accuracy_measure,
+                                        hard_network_edge_accuracy_measure,
+                                        test_loglikelihood_measure,
+                                        train_loglikelihood_measure,
+                                        network_enrichment_measure],
                          sparsities = [0],
                          repeat = 1,
                          model_verbose = false)
 end
 
 function run_synth_validation(output_file = Nothing;
-                              n = 10000,
-                              p = 5,
+                              n = 100000,
+                              p = 30,
                               k = 5,
-                              emission_fitters = [fit_full_cov,
+                              emission_fitters = [Nothing,
                                                   fit_diag_cov,
-                                                  fit_glasso],
+                                                  fit_glasso,
+                                                  fit_full_cov],
                               validations = [hard_label_accuracy_measure,
                                              hard_network_edge_accuracy_measure,
-                                             loglikelihood_measure],
+                                             test_loglikelihood_measure,
+                                             train_loglikelihood_measure,
+                                             network_enrichment_measure],
                               sparsities = [0,
-                                            0.25,
                                             0.5,
-                                            0.75],
+                                            0.7,
+                                            0.8,
+                                            0.9],
                               repeat = 10,
                               eval_verbose = true,
-                              model_verbose = true)
+                              model_verbose = false)
+    if output_file != Nothing
+        open(identity, output_file, "w")
+    end
+    
 
-    models = [(data, k) -> baum_welch(5, data, k, emission_dist,
+    models = [emission_dist == Nothing ? Nothing :
+              (data, k) -> baum_welch(5, data, k, emission_dist,
                                       verbose = model_verbose ? true : Nothing)
               for emission_dist = emission_fitters]
 
@@ -63,6 +105,7 @@ function run_synth_validation(output_file = Nothing;
                                 models,
                                 data_generators,
                                 n,
+                                n,
                                 repeat = repeat,
                                 verbose = eval_verbose)
 
@@ -72,6 +115,28 @@ function run_synth_validation(output_file = Nothing;
 
     results
 end
+
+function evaluate_measures (validation_measure :: Function,
+                            model_optimizer :: Union(Type{Nothing},Function),
+                            args...;
+                            repeat :: Integer = 10,
+                            verbose = true,
+                            kwargs...)
+    function repeat_evaluate(i)
+        if verbose 
+            println("\tIteration $i/$repeat")
+        end
+        
+        evaluate_measures(args...;
+                          repeat = Nothing,
+                          verbose = verbose,
+                          kwargs...)
+    end
+
+    [repeat_evaluate(iteration)
+     for iteration = 1:repeat]
+end
+
 
 # if repeat != Nothing:
 #     results[iteration_ix]
@@ -83,38 +148,57 @@ function evaluate_measures (# data, true_lables,
                             # found_ll -> X
                             validation_measure :: Function,
                             #(data, k) -> (estimate, model, log-likelihood)
-                            model_optimizer :: Function,
+                            model_optimizer :: Union(Type{Nothing},Function),
                             # n -> (data, labels, model)
                             data_generator :: Function = num -> rand_HMM_data(num, 6, 3),
-                            n = 100000;
-                            repeat = Nothing,
+                            train_n = 10000,
+                            holdout_n = 10000;
+                            repeat = Nothing, # Should get here if integer
                             verbose = true)
-    if repeat != Nothing
+    if typeof(repeat) <: Integer
         function repeat_evaluate(i)
             if verbose 
                 println("\tIteration $i/$repeat")
             end
             
-            evaluate_measures(validation_measure, model_optimizer,
-                              data_generator, n,
-                              repeat = Nothing)
+            evaluate_measures(validation_measure,
+                              model_optimizer,
+                              data_generator,
+                              train_n,
+                              holdout_n;
+                              repeat = Nothing,
+                              verbose = verbose)
         end
 
         return [repeat_evaluate(iteration)
                 for iteration = 1:repeat]
     end
 
-    data_train, labels_train, true_model = data_generator(n)
+    data_all, labels_all, true_model = data_generator(train_n + holdout_n)
+    data_train = data_all[:, 1:train_n]
+    data_holdout = data_all[:, train_n+1:end]
+    labels_train = labels_all[1:train_n]
+    labels_holdout = labels_all[train_n+1:end]
+
 
     k = size(true_model.trans, 1)
-    (found_estimate_unordered, found_model_unordered, found_ll) = model_optimizer(data_train, k)
+    if model_optimizer != Nothing
+        (found_estimate_unordered, found_model_unordered, found_ll) =
+            model_optimizer(data_train, k)
     
-    (found_estimate, found_model) = match_states(found_estimate_unordered,
-                                                 found_model_unordered,
-                                                 labels_train,
-                                                 true_model)
+        (found_estimate, found_model) = match_states(found_estimate_unordered,
+                                                     found_model_unordered,
+                                                     labels_train,
+                                                     true_model)
+    else
+        found_estimate = HMMEstimate(labels_to_gamma(labels_train, k))
+        found_model = true_model
+        found_ll = log_likelihood(data_train, k, true_model, dist_log_pdf)
+    end
 
-    validation_measure(data_train, labels_train, true_model,
+    validation_measure(data_train, labels_train,
+                       data_holdout, labels_holdout,
+                       true_model,
                        found_estimate, found_model, found_ll)
 end
 
@@ -124,17 +208,20 @@ end
 #     results[measure_ix]
 # end
 function evaluate_measures(validation_measures :: Array{Function},
-                           model_optimizer :: Function,
+                           model_optimizer :: Union(Type{Nothing},Function),
                            args...;
-                           repeat = Nothing)
-    function validation_measure (data_train, labels_train, true_model,
+                           repeat = Nothing,
+                           kwargs...)
+    function validation_measure (data_train, labels_train,
+                                 data_holdout, labels_holdout,
+                                 true_model,
                                  found_estimate, found_model, found_ll)
-        [measure(data_train, labels_train, true_model,
+        [measure(data_train, labels_train,
+                 data_holdout, labels_holdout,
+                 true_model,
                  found_estimate, found_model, found_ll)
          for measure = validation_measures]
     end
-
-    # Must reorder results!
 
     results = evaluate_measures(validation_measure,
                                 model_optimizer,
@@ -155,9 +242,10 @@ end
 #     results[model_ix][measure_ix]
 # end
 function evaluate_measures(validation_measures :: Array{Function},
-                           model_optimizers :: Array{Function},
+                           model_optimizers :: Array{Union(Type{Nothing},Function)},
                            args...;
                            verbose = true,
+                           include_true = true,
                            kwargs...)
     seed = 1
 
@@ -168,7 +256,6 @@ function evaluate_measures(validation_measures :: Array{Function},
 
         # each optimizer should get the same data
         srand(seed)
-        seed += 1
 
         evaluate_measures(validation_measures,
                           model_optimizers[optimizer_ix],
@@ -176,12 +263,21 @@ function evaluate_measures(validation_measures :: Array{Function},
                           kwargs...)
     end
 
-    [evaluate_optimizer(ix)
-     for ix = 1:length(model_optimizers)]
+    results = [evaluate_optimizer(ix)
+               for ix = 1:length(model_optimizers)]
+
+
+
+    results
 end
 
+# if repeat != Nothing:
+#     results[gen_ix][model_ix][measure_ix][iteration_ix]
+# else:
+#     results[gen_ix][model_ix][measure_ix]
+# end
 function evaluate_measures(validation_measures :: Array{Function},
-                           model_optimizers :: Array{Function},
+                           model_optimizers :: Array{Union(Type{Nothing},Function)},
                            data_generators :: Array{Function},
                            args...;
                            verbose = true,
@@ -193,7 +289,7 @@ function evaluate_measures(validation_measures :: Array{Function},
 
         evaluate_measures(validation_measures,
                           model_optimizers,
-                          data_generators[data_generators_ix],
+                          data_generators[data_generator_ix],
                           args...;
                           kwargs...)  
     end 
