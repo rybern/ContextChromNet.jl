@@ -14,7 +14,7 @@ function rand_HMM_model(p :: Integer,
                         k :: Integer;
                         avg_range = .1,
                         sparsity = .3,
-                        dwell_prob = .5)
+                        dwell_prob = 3/4)
     dists = Array(MvNormal, k)
     for i = 1:k
         mu = rand(p) * avg_range - avg_range/2;
@@ -24,7 +24,6 @@ function rand_HMM_model(p :: Integer,
     end 
 
     states = map(dist -> HMMState(dist, true), dists)
-
     HMMStateModel(states, uniform_trans(k, dwell_prob))
 end
 

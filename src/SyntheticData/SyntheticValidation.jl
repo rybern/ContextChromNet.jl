@@ -86,16 +86,22 @@ function run_synth_validation(output_file = Nothing;
                               repeat = 10,
                               eval_verbose = true,
                               model_verbose = false)
+    if eval_verbose
+        println("Starting evaluation")
+    end
+
     if output_file != Nothing
         open(identity, output_file, "w")
-    end
-    
+    end    
 
     models = [emission_dist == Nothing ? Nothing :
               (data, k) -> baum_welch(5, data, k, emission_dist,
                                       verbose = model_verbose ? true : Nothing)
               for emission_dist = emission_fitters]
 
+    if (eval_verbose)
+        println("Pregenerating models")
+    end
     data_models = [rand_HMM_model(p, k, sparsity = sparsity)
                    for sparsity = sparsities]
     data_generators = [(n -> rand_HMM_data(n, p, data_model))
