@@ -1,0 +1,22 @@
+Loading required package: glasso
+
+signal (15): Terminated
+unknown function (ip: -808692570)
+jl_apply_generic at /usr/bin/../lib/x86_64-linux-gnu/julia/libjulia.so (unknown line)
+forward at /home/ryanbernstein1/ContextChromNet/src/CCN/BaumWelch.jl:213
+jlcall_forward_21143 at  (unknown line)
+jl_apply_generic at /usr/bin/../lib/x86_64-linux-gnu/julia/libjulia.so (unknown line)
+anonymous at multi.jl:1279
+run_work_thunk at multi.jl:621
+run_work_thunk at multi.jl:630
+jlcall_run_work_thunk_21037 at  (unknown line)
+jl_apply_generic at /usr/bin/../lib/x86_64-linux-gnu/julia/libjulia.so (unknown line)
+anonymous at task.jl:6
+jl_handle_stack_switch at /usr/bin/../lib/x86_64-linux-gnu/julia/libjulia.so (unknown line)
+julia_trampoline at /usr/bin/../lib/x86_64-linux-gnu/julia/libjulia.so (unknown line)
+unknown function (ip: 4199613)
+__libc_start_main at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+unknown function (ip: 4199673)
+unknown function (ip: 0)
+Loading required package: glasso
+Using R_HOME=/usr/lib/R
