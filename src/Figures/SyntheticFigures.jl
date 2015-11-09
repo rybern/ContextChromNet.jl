@@ -18,43 +18,52 @@ measure_names = ["Label accuracy",
                  "Train Log-Likelihood Accuracy",
                  "Network enrichment"]
 
+measure_perm = [1:5]
+model_perm = [2, 3, 4, 1]
+gen_perm = reverse([1:5])
 
 function run_standard_figures(results_file)
     results = open(deserialize, results_file)
 
     # label accuracy
-    SyntheticFigures.measure_figure(results, 1, "Label accuracy versus Sparsity", Nothing,
-                                    save_file = "results/label_acc.png")
+    measure_figure(results, 1, "Label accuracy versus Sparsity", Nothing,
+                   y_limits = true,
+                   save_file = "results/label_acc.png")
 
     # network acc
-    SyntheticFigures.measure_figure(results,
-                                    2,
-                                    "Average network accuracy versus Sparsity",
-                                    Nothing,
-                                    preprocess = mean,
-                                    save_file = "results/network_acc.png")
+    measure_figure(results,
+                   2,
+                   "Average network accuracy versus Sparsity",
+                   Nothing,
+                   preprocess = mean,
+                   save_file = "results/network_acc.png")
 
     # loglikelihood
-    SyntheticFigures.measure_figure(results, 3, "Test Log-Likelihood versus Sparsity", Nothing,
-                                    preprocess = (-),
-                                    save_file = "results/testloglike.png")
+    measure_figure(results, 3, "Negative Test Log-Likelihood versus Sparsity", Nothing,
+                   preprocess = (-),
+                   save_file = "results/testloglike.png",
+                   y_limits = true)
 
     # network acc
-    SyntheticFigures.measure_figure(results,
-                                    5,
-                                    "Average network enrichment fold versus Sparsity",
-                                    Nothing,
-                                    preprocess = mean,
-                                    save_file = "results/network_enrichment.png")
+    measure_figure(results,
+                   5,
+                   "Average network enrichment fold versus Sparsity",
+                   Nothing,
+                   preprocess = mean,
+                   save_file = "results/network_enrichment.png")
 end
-
 
 function measure_figure(results,
                         measure_ix,
                         figure_title,
-                        relative = Nothing;
+                        relative = Nothing,
+                        model_ixs = model_perm,
+                        gen_ixs = gen_perm;
                         preprocess = identity,
-                        save_file = Nothing)
+                        save_file = Nothing,
+                        y_limits = false)
+
+    println(model_ixs)
 
     means, stds = measure_moments(results,
                                   measure_ix,
@@ -65,23 +74,23 @@ function measure_figure(results,
     n_models = length(means[1])
 
     bars = [[Array{Float64, 1}[[means[gen_ix][model_ix]
-                                for gen_ix = 1:n_gens],
+                                for gen_ix = gen_ixs],
                                [stds[gen_ix][model_ix]
-                                for gen_ix = 1:n_gens]],
-             model_names[model_ix]]
-            for model_ix = 1:n_models]
+                                for gen_ix = gen_ixs]],
+             model_names[model_perm][model_ix]]
+            for model_ix = model_ixs]
 
     println(bars)
 
     grouped_bar_plot(bars,
-                     gen_names,
+                     gen_names[gen_perm],
                      "Density",
-                     measure_names[measure_ix],
+                     measure_names[measure_perm][measure_ix],
                      figure_title,
                      dumpfile = save_file == Nothing ? false : save_file,
-                     bar_width = .15)
+                     bar_width = .15,
+                     y_limits = y_limits)
 end
-
 
 function split_result_measures (res)
     gen_len = length(res)

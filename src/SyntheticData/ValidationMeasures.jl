@@ -65,16 +65,20 @@ function network_enrichment (found_network, true_network, eps = 10e-8)
     truths = map(edge -> in((edge[1], edge[2]), true_edges) || in((edge[2], edge[1]), true_edges),
                  found_edges)
 
+
     found_true = sum(truths)
-    random_true = num_true_edges * num_true_edges / length(found_network)
+    num_possible = size(found_network, 1) * (size(found_network, 2) - 1) / 2
+    random_true = num_true_edges * num_true_edges / num_possible
 
     found_true / random_true
 end
 
 function sorted_edges (network)
     (n, m) = size(network)
-    weighted_edges = vec([(abs(network[i, j]), (i, j))
-                          for i = 1:n, j = 1:m])
+    
+    edge_ixs = filter(t -> t[1] < t[2], [(i, j) for i = 1:n, j = 1:m])
+    weighted_edges = [(abs(network[ix[1], ix[2]]), ix)
+                      for ix = edge_ixs]
 
     sort(weighted_edges, by = t -> t[1], rev=true)
 end

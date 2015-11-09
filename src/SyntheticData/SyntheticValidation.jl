@@ -48,6 +48,8 @@ function toy2()
                                         train_loglikelihood_measure,
                                         network_enrichment_measure],
                          sparsities = [.5],
+                         n = 1000,
+                         p = 30,
                          repeat = Nothing,
                          model_verbose = false)
 end
@@ -253,7 +255,7 @@ function evaluate_measures(validation_measures :: Array{Function},
                            verbose = true,
                            include_true = true,
                            kwargs...)
-    seed = 1
+    seed = 11
 
     function evaluate_optimizer (optimizer_ix)
         if verbose
