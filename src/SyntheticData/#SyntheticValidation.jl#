@@ -94,7 +94,7 @@ function run_synth_validation(output_file = Nothing;
 
     if output_file != Nothing
         open(identity, output_file, "w")
-    end    
+    end
 
     models = [emission_dist == Nothing ? Nothing :
               (data, k) -> baum_welch(5, data, k, emission_dist,

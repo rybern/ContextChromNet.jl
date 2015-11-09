@@ -56,31 +56,34 @@ function network_enrichment_measure (data_train, labels_train,
      for network_pair = collect(zip(found_networks, true_networks))]
 end
 
-function network_enrichment (found_network, true_network, eps = 10e-8)
-    true_edges = Set(map(t -> t[2], filter(t -> t[1] > eps, sorted_edges(true_network))))
+function network_enrichment (found_network, true_network; eps = 10e-8)
+    true_edges = Set(map(t -> t[2], sorted_edges(true_network, eps = eps)))
     num_true_edges = length(true_edges)
-    
-    found_edges = map(t -> t[2], sorted_edges(found_network))[1:num_true_edges]
+
+    all_found_edges = map(t -> t[2], sorted_edges(found_network))
+    num_found_edges = min(length(all_found_edges), num_true_edges)
+    println("num_found_edges $num_found_edges")
+    found_edges = all_found_edges[1:num_found_edges]
 
     truths = map(edge -> in((edge[1], edge[2]), true_edges) || in((edge[2], edge[1]), true_edges),
                  found_edges)
 
-
-    found_true = sum(truths)
+    found_true = num_found_edges == 0 ? 0 : sum(truths)
     num_possible = size(found_network, 1) * (size(found_network, 2) - 1) / 2
     random_true = num_true_edges * num_true_edges / num_possible
 
     found_true / random_true
 end
 
-function sorted_edges (network)
+function sorted_edges (network; eps = 10e-8)
     (n, m) = size(network)
     
     edge_ixs = filter(t -> t[1] < t[2], [(i, j) for i = 1:n, j = 1:m])
     weighted_edges = [(abs(network[ix[1], ix[2]]), ix)
                       for ix = edge_ixs]
+    nonzero_edges = filter(t -> t[1] > eps, weighted_edges)
 
-    sort(weighted_edges, by = t -> t[1], rev=true)
+    sort(nonzero_edges, by = t -> t[1], rev=true)
 end
 
 function hard_label_accuracy (gamma, true_labels)
