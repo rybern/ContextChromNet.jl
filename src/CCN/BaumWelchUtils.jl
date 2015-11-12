@@ -1,5 +1,5 @@
 module BaumWelchUtils
-export force_pos_def, labels_to_gamma, gamma_to_labels, transpose!, model_to_networks
+export force_pos_def, labels_to_gamma, gamma_to_labels, transpose!, model_to_networks, mat_network_sparsity
 
 using HMMTypes
 
@@ -86,6 +86,18 @@ function transposeblock!(B::StridedMatrix,A::StridedMatrix,m::Int,n::Int,offseti
     return B
 end
 
+function mat_network_sparsity (mat, eps = 10e-8)
+    m = size(mat, 1)
+
+    off_diags = 1 - eye(m)
+    off_diag_mat = mat .* off_diags
+
+    non_zeros = mat .> eps
+    
+    total_size = length(mat) - m
+    
+    sum(non_zeros) / total_size
+end
 
 end
 

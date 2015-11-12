@@ -31,7 +31,7 @@ end
 
 function fit_dist_to_state (fit_dist)
     function fit_state {N <: Number} (data :: AbstractArray{N, 2},
-                                      weights :: Array{N, 1},
+                                      weights :: Array{Float64, 1},
                                       old_state :: HMMState)
         if old_state.active == false
             HMMState(Nothing, false)
@@ -41,7 +41,7 @@ function fit_dist_to_state (fit_dist)
     end
 
     function fit_states {N <: Number} (data :: AbstractArray{N, 2},
-                                       gamma :: Array{N, 2},
+                                       gamma :: Array{Float64, 2},
                                        old_states :: Array{HMMState, 1} = 
                                        [HMMState(Nothing, true)
                                         for i = 1:size(gamma, 1)])
@@ -59,13 +59,13 @@ function fit_dist_to_state (fit_dist)
 end
 
 function fit_dist_full_cov {N <: Number} (data :: AbstractArray{N, 2},
-                                          weights :: Array{N, 1})
+                                          weights :: Array{Float64, 1})
     (mu, cov) = mean_and_cov(data, WeightVec(weights), vardim=2)
     safe_mv_normal(mu, cov)
 end
 
 function fit_dist_diag_cov {N <: Number} (data :: AbstractArray{N, 2},
-                                          weights :: Array{N, 1})
+                                          weights :: Array{Float64, 1})
     p = size(data, 1)
 
     (mu, cov) = mean_and_cov(data, WeightVec(weights), vardim=2)
@@ -73,7 +73,7 @@ function fit_dist_diag_cov {N <: Number} (data :: AbstractArray{N, 2},
 end
 
 function fit_dist_glasso {N <: Number} (data :: AbstractArray{N, 2},
-                                        weights :: Array{N, 1})
+                                        weights :: Array{Float64, 1})
     mu, cov_ = mean_and_cov(data, WeightVec(weights), vardim=2)
     cov = glasso_cov(data, weights)
 

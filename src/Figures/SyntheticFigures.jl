@@ -14,9 +14,9 @@ model_names = ["Truth",
                "Full Cov"]
 measure_names = ["Label accuracy",
                  "Network accuracy",
-                 "Test Log-Likelihood Accuracy",
+                 "Negative Test Log-Likelihood",
                  "Train Log-Likelihood Accuracy",
-                 "Network enrichment"]
+                 "Network enrichment fold"]
 
 measure_perm = [1:5]
 model_perm = [2, 3, 4, 1]
@@ -26,22 +26,22 @@ function run_standard_figures(results_file)
     results = open(deserialize, results_file)
 
     # label accuracy
-    measure_figure(results, 1, "Label accuracy versus Sparsity", Nothing,
+    measure_figure(results, 1, "Label Accuracy versus Sparsity", Nothing,
                    y_limits = true,
-                   save_file = "results/label_acc.png")
+                   save_file = "results/label-acc.png")
 
     # network acc
-    measure_figure(results,
-                   2,
-                   "Average network accuracy versus Sparsity",
-                   Nothing,
-                   preprocess = mean,
-                   save_file = "results/network_acc.png")
+#    measure_figure(results,
+#                   2,
+#                   "Average network accuracy versus Sparsity",
+#                   Nothing,
+#                   preprocess = mean,
+#                   save_file = "results/network_acc.png")
 
     # loglikelihood
     measure_figure(results, 3, "Negative Test Log-Likelihood versus Sparsity", Nothing,
                    preprocess = (-),
-                   save_file = "results/testloglike.png",
+                   save_file = "results/neg-test-loglike.png",
                    y_limits = true)
 
     # network acc
@@ -50,15 +50,16 @@ function run_standard_figures(results_file)
                    "Average network enrichment fold versus Sparsity",
                    Nothing,
                    preprocess = mean,
-                   save_file = "results/network_enrichment.png")
+                   save_file = "results/net-enrichment.png",
+                   model_ixs = [3, 4, 1])
 end
 
 function measure_figure(results,
                         measure_ix,
                         figure_title,
-                        relative = Nothing,
+                        relative = Nothing;
                         model_ixs = model_perm,
-                        gen_ixs = gen_perm;
+                        gen_ixs = gen_perm,
                         preprocess = identity,
                         save_file = Nothing,
                         y_limits = false)
@@ -77,7 +78,7 @@ function measure_figure(results,
                                 for gen_ix = gen_ixs],
                                [stds[gen_ix][model_ix]
                                 for gen_ix = gen_ixs]],
-             model_names[model_perm][model_ix]]
+             model_names[model_ix]]
             for model_ix = model_ixs]
 
     println(bars)
