@@ -23,7 +23,7 @@ function learn_CCN (data,
                                                               fit_emissions,
                                                               verbose = true))
     # make sure output dir is available
-    if output_dir != Nothing
+    if output_dir != Nothing && !isdir(output_dir)
         mkdir(output_dir)
     end
 
