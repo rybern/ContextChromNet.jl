@@ -1,6 +1,7 @@
 module ValidationMeasures
 export hard_label_accuracy_measure, hard_network_edge_accuracy_measure, network_enrichment_measure, train_loglikelihood_measure, test_loglikelihood_measure, whole_cov_data_measure, hard_network_edge_accuracy, hard_label_accuracy
 
+using EdgeUtils
 using BaumWelchUtils
 using BaumWelch
 using EmissionDistributions
@@ -73,17 +74,6 @@ function network_enrichment (found_network, true_network; eps = 10e-8)
     random_true = num_true_edges * num_true_edges / num_possible
 
     found_true / random_true
-end
-
-function sorted_edges (network; eps = 10e-8)
-    (n, m) = size(network)
-    
-    edge_ixs = filter(t -> t[1] < t[2], [(i, j) for i = 1:n, j = 1:m])
-    weighted_edges = [(abs(network[ix[1], ix[2]]), ix)
-                      for ix = edge_ixs]
-    nonzero_edges = filter(t -> t[1] > eps, weighted_edges)
-
-    sort(nonzero_edges, by = t -> t[1], rev=true)
 end
 
 function hard_label_accuracy (gamma, true_labels)

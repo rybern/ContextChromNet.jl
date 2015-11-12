@@ -1,6 +1,6 @@
 module Loading
 
-export with_data, with_data, with_data_header, load_filtered, load_data, load_header, load_pairs, load_metadata, load_mapping
+export with_data, with_data, with_data_header, load_filtered, load_filtered_header, load_data, load_header, load_pairs, load_metadata, load_mapping
 
 using JSON
 
@@ -16,10 +16,8 @@ function with_data(f :: Function,
 end
 
 function with_header(f,
-                     n = Nothing;
                      dataPredicate = x -> x["cellType"] == "K562")
-    header = load_filtered_header(filterBy = dataPredicate,
-                                  firstN = n)
+    header = load_filtered_header(filterBy = dataPredicate)
 
     f(header)
 end
@@ -58,8 +56,7 @@ function load_filtered(; filterBy = x -> x["cellType"] == "K562",
 end
 
 function load_filtered_header(filterBy = x -> x["cellType"] == "K562";
-                              dir_name = default_basedir,
-                              firstN = Nothing)
+                              dir_name = default_basedir)
     header = load_header("$dir_name/header")
     metadata = load_metadata("$dir_name/metadata")
 
@@ -97,7 +94,7 @@ function load_metadata(sourceName = "$default_basedir/metadata")
 end
 
 # experiment -> target (for reverse = false)
-function load_mapping(sourceName = "uniprot.mapping";
+function load_mapping(sourceName = "data/uniprot.mapping";
                       reverse = false)
     mappingMatrix = open(readcsv, sourceName)
     if reverse
@@ -107,7 +104,7 @@ function load_mapping(sourceName = "uniprot.mapping";
     end
 end
 
-function load_pairs(sourceName = "biogrid_human_swissprot.csv")
+function load_pairs(sourceName = "data/biogrid_human_swissprot.csv")
     pairsMatrix = open(readcsv, sourceName)
     pairs = collect(zip(pairsMatrix[:, 1], pairsMatrix[:, 2]));
     reverse = map(p -> (p[2], p[1]), pairs)

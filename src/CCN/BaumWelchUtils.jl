@@ -1,7 +1,23 @@
 module BaumWelchUtils
-export force_pos_def, labels_to_gamma, gamma_to_labels, transpose!, model_to_networks, mat_network_sparsity
+export force_pos_def, labels_to_gamma, gamma_to_labels, transpose!, model_to_networks, mat_network_sparsity, sorted_edges, unique_by
 
 using HMMTypes
+
+function unique_by (vec,
+                    by)
+    results = typeof(vec[1])[]
+    by_set = Set()
+
+    for v = vec
+        b = by(v)
+        if !in(b, by_set)
+            push!(by_set, b)
+            push!(results, v)
+        end
+    end
+
+    results
+end
 
 function force_pos_def(m)
     if(!isposdef(m))

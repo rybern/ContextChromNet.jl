@@ -86,9 +86,10 @@ fit_glasso = fit_dist_to_state(fit_dist_glasso)
 dist_log_pdf = log_pdf_dist_to_state (logpdf!)
 
 function safe_mv_normal(mu :: Array{Float64}, 
-                        cov :: Array{Float64, 2})
+                        cov :: Array{Float64, 2},
+                        check_singular = false)
     try
-        if (det(10000*cov) == 0)
+        if (check_singular && det(10000*cov) == 0)
             println("Singular matrix encountered. Sample not long enough.")
             println("Temporarily using identity cov.")
             cov = eye(size(cov,1))
