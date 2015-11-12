@@ -88,7 +88,7 @@ dist_log_pdf = log_pdf_dist_to_state (logpdf!)
 function safe_mv_normal(mu :: Array{Float64}, 
                         cov :: Array{Float64, 2})
     try
-        if (det(cov) == 0)
+        if (det(10000*cov) == 0)
             println("Singular matrix encountered. Sample not long enough.")
             println("Temporarily using identity cov.")
             cov = eye(size(cov,1))
