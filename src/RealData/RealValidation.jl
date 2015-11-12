@@ -24,7 +24,7 @@ function learn_CCN (data,
                                                               verbose = true))
     # make sure output dir is available
     if output_dir != Nothing
-        open(identity, output_file, "w")
+        mkdir(output_dir)
     end
 
     (estimate, model, ll) = model_optimizer(data, k)
