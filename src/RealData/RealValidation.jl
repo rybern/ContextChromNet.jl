@@ -30,9 +30,9 @@ function learn_CCN (data,
     (estimate, model, ll) = model_optimizer(data, k)
 
     if output_dir != Nothing
-        estimate_filepath = "$output_dir/$estimate_filepath"
-        loglikelihood_filepath = "$output_dir/$loglikelihood_filepath"
-        model_filepath = "$output_dir/$model_filepath"
+        estimate_filepath = "$output_dir/$estimate_filename"
+        loglikelihood_filepath = "$output_dir/$loglikelihood_filename"
+        model_filepath = "$output_dir/$model_filename"
     end
 
     (estimate, model, ll)
