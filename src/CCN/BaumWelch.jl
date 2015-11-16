@@ -25,6 +25,7 @@ function baum_welch (num_runs :: Integer,
     function run(i)
         if verbose != Nothing
             println("run #$(i)")
+            flush(STDOUT)
             baum_welch(args...; verbose = 1, kwargs...)
         else
             baum_welch(args...; verbose = Nothing, kwargs...)
@@ -119,6 +120,7 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
         if verbose != Nothing
             head = join(["\t" for i=1:verbose], "")
             println("$(head)iteration $iteration: log-likelihood $ll")
+            flush(STDOUT)
         end
 
         converged && break

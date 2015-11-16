@@ -90,6 +90,7 @@ function run_synth_validation(output_file = Nothing;
                               model_verbose = false)
     if eval_verbose
         println("Starting evaluation")
+        flush(STDOUT)
     end
 
     if output_file != Nothing
@@ -103,6 +104,7 @@ function run_synth_validation(output_file = Nothing;
 
     if (eval_verbose)
         println("Pregenerating models")
+        flush(STDOUT)
     end
     data_models = [rand_HMM_model(p, k, sparsity = sparsity)
                    for sparsity = sparsities]
@@ -133,6 +135,7 @@ function evaluate_measures (validation_measure :: Function,
     function repeat_evaluate(i)
         if verbose 
             println("\tIteration $i/$repeat")
+            flush(STDOUT)
         end
         
         evaluate_measures(args...;
@@ -167,6 +170,7 @@ function evaluate_measures (# data, true_lables,
         function repeat_evaluate(i)
             if verbose 
                 println("\tIteration $i/$repeat")
+                flush(STDOUT)
             end
             
             evaluate_measures(validation_measure,
@@ -260,6 +264,7 @@ function evaluate_measures(validation_measures :: Array{Function},
     function evaluate_optimizer (optimizer_ix)
         if verbose
             println("Model optimizer $optimizer_ix/$(length(model_optimizers))")
+            flush(STDOUT)
         end
 
         # each optimizer should get the same data
@@ -293,6 +298,7 @@ function evaluate_measures(validation_measures :: Array{Function},
     function evaluate_generator (data_generator_ix)
         if verbose
             println("Generator $data_generator_ix/$(length(data_generators))")
+            flush(STDOUT)
         end
 
         evaluate_measures(validation_measures,
