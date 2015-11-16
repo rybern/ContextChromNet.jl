@@ -8,6 +8,7 @@ using HMMTypes
 using ExtendedLogs
 using SharedEmissions
 
+using Logging
 using ArrayViews
 
 function toy()
@@ -20,13 +21,12 @@ end
 
 function baum_welch (num_runs :: Integer,
                      args...;
-                     verbose = true,
+                     verbose :: Union(Type{Nothing}, Integer) = 0,
                      kwargs...)
     function run(i)
         if verbose != Nothing
-            println("run #$(i)")
-            flush(STDOUT)
-            baum_welch(args...; verbose = 1, kwargs...)
+            logln("BW Random Restart $i/$num_runs", verbose)
+            baum_welch(args...; verbose = verbose + 1, kwargs...)
         else
             baum_welch(args...; verbose = Nothing, kwargs...)
         end
@@ -35,6 +35,12 @@ function baum_welch (num_runs :: Integer,
     runs = map(run, 1:num_runs)
 
     sort!(runs, by = run -> run[3], rev = true)
+
+    if verbose != Nothing
+        logln("$num_runs complete, log-likelihoods: $(map(r -> r[3], runs)), best: $(runs[1][3])",
+              verbose)
+    end
+
     runs[1]
 end
 
@@ -51,8 +57,8 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
                     #                 gamma, states, ll,
                     #                 iteration ->
                     #                 Bool
-                    is_converged = iteration_convergence(5) :: Function,
-                    verbose = 0)
+                    is_converged = ll_convergence(.01) :: Function,
+                    verbose :: Union(Type{Nothing}, Integer) = 0)
 
     data = convert(SharedArray, data)
 
@@ -66,11 +72,15 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
         view(emissions, :, t)
     end
 
+    if verbose != Nothing
+        logln("Initial emission calculation", verbose)
+    end
+
     updateEmissions!(emission_log_pdf, initial_model.states, data, emissions, emissions_flipped)
 
     initial = ones(k) / k
     log_initial = eln_arr(initial)
-
+k
     transition = initial_model.trans
     log_transition = eln_arr(transition)
 
@@ -79,13 +89,28 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
     ll = -Inf
     oldGamma = false;
 
+    if verbose != Nothing
+        logln("Starting EM", verbose)
+    end
+
+
     iteration = 1;
     while true
-        (log_alpha, log_beta, newGammaPromise) = bw_e_step(spec,
-                                                log_transition,
-                                                emission_log_density,
-                                                log_initial)
+        if verbose != Nothing
+            logln("Starting iteration $iteration", verbose)
+        end
 
+        if verbose != Nothing
+            logln("E Step", verbose + 1)
+        end
+
+        (log_alpha, log_beta, newGammaPromise) = bw_e_step(spec,
+                                                           log_transition,
+                                                           emission_log_density,
+                                                           log_initial)
+        if verbose != Nothing
+            logln("M Step", verbose + 1)
+        end
         (newTransition, newInitial, newStates) = bw_m_step(spec,
                                                            log_transition, 
                                                            emission_log_density, 
@@ -98,12 +123,18 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
 
         newGamma = fetch(newGammaPromise)
 
+        if verbose != Nothing
+            logln("Log-Like", verbose + 1)
+        end
         ll = log_likelihood(log_alpha)
 
         converged = iteration != 1 && is_converged(oldGamma, oldStates, oldLL,
                                                    newGamma, newStates, ll,
                                                    iteration)
 
+        if verbose != Nothing
+            logln("Emissions update", verbose + 1)
+        end
         updateEmissions!(emission_log_pdf, newStates, data, emissions, emissions_flipped)
 
         initial = newInitial
@@ -118,9 +149,7 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
         oldLL = ll
 
         if verbose != Nothing
-            head = join(["\t" for i=1:verbose], "")
-            println("$(head)iteration $iteration: log-likelihood $ll")
-            flush(STDOUT)
+            logln("iteration complete; log-likelihood: $ll", verbose + 1)
         end
 
         converged && break
@@ -128,15 +157,20 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
         iteration = iteration + 1
     end
 
+    if verbose != Nothing
+        logln("Converged", verbose)
+    end
+
+
     (HMMEstimate(oldGamma), HMMStateModel(oldStates, transition), ll)
 
 end
 
 
-function log_likelihood(data, 
-                       k,
-                       model,
-                       emission_log_pdf)
+function log_likelihood (data, 
+                         k,
+                         model,
+                         emission_log_pdf)
     (p, n) = size(data)
     spec = ProblemSpec(n, p, k)
 

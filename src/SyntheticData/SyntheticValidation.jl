@@ -8,6 +8,7 @@ using BaumWelch
 using SyntheticData
 using EmissionDistributions
 using BaumWelchUtils
+using Logging
 
 function ll_test()
     train_n = 10000
@@ -51,7 +52,7 @@ function toy2()
                          n = 1000,
                          p = 30,
                          repeat = Nothing,
-                         model_verbose = false)
+                         model_verbose = true)
 end
 
 function toy3()
@@ -89,8 +90,7 @@ function run_synth_validation(output_file = Nothing;
                               eval_verbose = true,
                               model_verbose = false)
     if eval_verbose
-        println("Starting evaluation")
-        flush(STDOUT)
+        logln("Starting evaluation")
     end
 
     if output_file != Nothing
@@ -99,13 +99,13 @@ function run_synth_validation(output_file = Nothing;
 
     models = [emission_dist == Nothing ? Nothing :
               (data, k) -> baum_welch(5, data, k, emission_dist,
-                                      verbose = model_verbose ? true : Nothing)
+                                      verbose = model_verbose ? eval_verbose : Nothing)
               for emission_dist = emission_fitters]
 
     if (eval_verbose)
-        println("Pregenerating models")
-        flush(STDOUT)
+        logln("Pregenerating models")
     end
+
     data_models = [rand_HMM_model(p, k, sparsity = sparsity)
                    for sparsity = sparsities]
     data_generators = [(n -> rand_HMM_data(n, p, data_model))
@@ -134,8 +134,7 @@ function evaluate_measures (validation_measure :: Function,
                             kwargs...)
     function repeat_evaluate(i)
         if verbose 
-            println("\tIteration $i/$repeat")
-            flush(STDOUT)
+            logln("\tIteration $i/$repeat")
         end
         
         evaluate_measures(args...;
@@ -169,8 +168,7 @@ function evaluate_measures (# data, true_lables,
     if typeof(repeat) <: Integer
         function repeat_evaluate(i)
             if verbose 
-                println("\tIteration $i/$repeat")
-                flush(STDOUT)
+                logln("\tIteration $i/$repeat")
             end
             
             evaluate_measures(validation_measure,
@@ -263,8 +261,7 @@ function evaluate_measures(validation_measures :: Array{Function},
 
     function evaluate_optimizer (optimizer_ix)
         if verbose
-            println("Model optimizer $optimizer_ix/$(length(model_optimizers))")
-            flush(STDOUT)
+            logln("Model optimizer $optimizer_ix/$(length(model_optimizers))")
         end
 
         # each optimizer should get the same data
@@ -297,8 +294,7 @@ function evaluate_measures(validation_measures :: Array{Function},
                            kwargs...)
     function evaluate_generator (data_generator_ix)
         if verbose
-            println("Generator $data_generator_ix/$(length(data_generators))")
-            flush(STDOUT)
+            logln("Generator $data_generator_ix/$(length(data_generators))")
         end
 
         evaluate_measures(validation_measures,

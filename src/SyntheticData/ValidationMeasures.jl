@@ -58,12 +58,11 @@ function network_enrichment_measure (data_train, labels_train,
 end
 
 function network_enrichment (found_network, true_network; eps = 10e-8)
-    true_edges = Set(map(t -> t[2], sorted_edges(true_network, eps = eps)))
+    true_edges = Set(sorted_edges(true_network, eps = eps, filter_small = true))
     num_true_edges = length(true_edges)
 
-    all_found_edges = map(t -> t[2], sorted_edges(found_network))
+    all_found_edges = sorted_edges(found_network, eps = eps, filter_small = true)
     num_found_edges = min(length(all_found_edges), num_true_edges)
-    println("num_found_edges $num_found_edges")
     found_edges = all_found_edges[1:num_found_edges]
 
     truths = map(edge -> in((edge[1], edge[2]), true_edges) || in((edge[2], edge[1]), true_edges),
