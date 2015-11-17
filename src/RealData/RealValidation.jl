@@ -5,6 +5,7 @@ export learn_CCN
 using Loading
 using EmissionDistributions
 using BaumWelch
+using Logging
 
 
 estimate_filename = "estimate.dump"
@@ -25,6 +26,10 @@ function learn_CCN (data,
     # make sure output dir is available
     if output_dir != Nothing && !isdir(output_dir)
         mkdir(output_dir)
+    end
+
+    if verbose
+        logstrln("Starting real validation")
     end
 
     (estimate, model, ll) = model_optimizer(data, k)
