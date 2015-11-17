@@ -1,0 +1,11 @@
+Mon 16 Nov 2015 11:29:00 PM UTC : 		BW Random Restart 1/5
+Mon 16 Nov 2015 11:36:27 PM UTC : 			Initial emission calculation
+Mon 16 Nov 2015 11:38:02 PM UTC : 			Starting EM
+Mon 16 Nov 2015 11:38:02 PM UTC : 			Starting iteration 1
+Mon 16 Nov 2015 11:38:02 PM UTC : 				E Step
+Mon 16 Nov 2015 11:43:34 PM UTC : 				M Step
+Mon 16 Nov 2015 11:52:41 PM UTC : 				Log-Like
+Mon 16 Nov 2015 11:52:41 PM UTC : 				Emissions update
+Mon 16 Nov 2015 11:54:08 PM UTC : 				iteration complete; log-likelihood: 1.8399056130782646e8
+Mon 16 Nov 2015 11:54:08 PM UTC : 			Starting iteration 2
+Mon 16 Nov 2015 11:54:08 PM UTC : 				E Step
