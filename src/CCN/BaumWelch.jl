@@ -25,7 +25,7 @@ function baum_welch (num_runs :: Integer,
                      kwargs...)
     function run(i)
         if verbose != Nothing
-            logln("BW Random Restart $i/$num_runs", verbose)
+            logstrln("BW Random Restart $i/$num_runs", verbose)
             baum_welch(args...; verbose = verbose + 1, kwargs...)
         else
             baum_welch(args...; verbose = Nothing, kwargs...)
@@ -37,7 +37,7 @@ function baum_welch (num_runs :: Integer,
     sort!(runs, by = run -> run[3], rev = true)
 
     if verbose != Nothing
-        logln("$num_runs complete, log-likelihoods: $(map(r -> r[3], runs)), best: $(runs[1][3])",
+        logstrln("$num_runs restarts complete, lls: $(map(r -> r[3], runs)), best: $(runs[1][3])",
               verbose)
     end
 
@@ -60,7 +60,10 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
                     is_converged = ll_convergence(.01) :: Function,
                     verbose :: Union(Type{Nothing}, Integer) = 0)
 
+
+    logstr("Initial data sharing ... ", verbose)
     data = convert(SharedArray, data)
+    logstrln("done", verbose == Nothing ? Nothing : 0, false)
 
     spec = ProblemSpec(size(data, 2),
                        size(data, 1), 
@@ -72,15 +75,12 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
         view(emissions, :, t)
     end
 
-    if verbose != Nothing
-        logln("Initial emission calculation", verbose)
-    end
-
-    updateEmissions!(emission_log_pdf, initial_model.states, data, emissions, emissions_flipped)
+    logstr("Initial emission calculation ... ", verbose)
+    update_emissions!(emission_log_pdf, initial_model.states, data, emissions, emissions_flipped)
+    logstrln("done", verbose == Nothing ? Nothing : 0, false)
 
     initial = ones(k) / k
     log_initial = eln_arr(initial)
-k
     transition = initial_model.trans
     log_transition = eln_arr(transition)
 
@@ -89,28 +89,22 @@ k
     ll = -Inf
     oldGamma = false;
 
-    if verbose != Nothing
-        logln("Starting EM", verbose)
-    end
 
-
+    logstrln("Starting EM", verbose)
+    
     iteration = 1;
     while true
-        if verbose != Nothing
-            logln("Starting iteration $iteration", verbose)
-        end
+        logstrln("Starting iteration $iteration", verbose)
 
-        if verbose != Nothing
-            logln("E Step", verbose + 1)
-        end
-
+        logstr("E Step ... ", verbose == Nothing ? Nothing : verbose + 1)
         (log_alpha, log_beta, newGammaPromise) = bw_e_step(spec,
                                                            log_transition,
                                                            emission_log_density,
                                                            log_initial)
-        if verbose != Nothing
-            logln("M Step", verbose + 1)
-        end
+        logstrln("done", verbose == Nothing ? Nothing : 0, false)
+
+
+        logstr("M Step ... ", verbose == Nothing ? Nothing : verbose + 1)
         (newTransition, newInitial, newStates) = bw_m_step(spec,
                                                            log_transition, 
                                                            emission_log_density, 
@@ -120,22 +114,23 @@ k
                                                            log_alpha,
                                                            log_beta,
                                                            newGammaPromise)
+        logstrln("done", verbose == Nothing ? Nothing : 0, false)
 
         newGamma = fetch(newGammaPromise)
 
-        if verbose != Nothing
-            logln("Log-Like", verbose + 1)
-        end
+
+        logstr("Log-Like ... ", verbose + 1)        
         ll = log_likelihood(log_alpha)
+        logstrln("done", verbose == Nothing ? Nothing : 0, false)
 
         converged = iteration != 1 && is_converged(oldGamma, oldStates, oldLL,
                                                    newGamma, newStates, ll,
                                                    iteration)
 
-        if verbose != Nothing
-            logln("Emissions update", verbose + 1)
-        end
-        updateEmissions!(emission_log_pdf, newStates, data, emissions, emissions_flipped)
+
+        logstr("Emissions update ... ", verbose == Nothing ? Nothing : verbose + 1)
+        update_emissions!(emission_log_pdf, newStates, data, emissions, emissions_flipped)
+        logstrln("done", verbose == Nothing ? Nothing : 0, false)
 
         initial = newInitial
         log_initial = eln_arr(initial)
@@ -149,7 +144,7 @@ k
         oldLL = ll
 
         if verbose != Nothing
-            logln("iteration complete; log-likelihood: $ll", verbose + 1)
+            logstrln("Iteration complete; log-likelihood: $ll", verbose + 1)
         end
 
         converged && break
@@ -158,7 +153,7 @@ k
     end
 
     if verbose != Nothing
-        logln("Converged", verbose)
+        logstrln("Converged", verbose)
     end
 
 
@@ -183,14 +178,13 @@ function log_likelihood (data,
 
     emissions_flipped = SharedArray(Float64, spec.n, spec.k)
     emissions = SharedArray(Float64, spec.k, spec.n)
-    updateEmissions!(emission_log_pdf, model.states, data, emissions, emissions_flipped)
+    update_emissions!(emission_log_pdf, model.states, data, emissions, emissions_flipped)
     
     function emission_log_density(t)
         view(emissions, :, t)
     end
 
     log_alpha = forward(spec, log_transition, emission_log_density, log_initial);
-
     log_likelihood(log_alpha)
 end
 
@@ -235,6 +229,7 @@ function forward(spec,
                  log_transition,
                  emission_log_density,
                  log_initial)
+
 
     log_alpha = Array(Float64, spec.k, spec.n);
 
@@ -332,7 +327,7 @@ end
 
 
 
-function updateEmissions!(emission_log_pdf, states, data, emissions, emissions_flipped)
+function update_emissions!(emission_log_pdf, states, data, emissions, emissions_flipped)
     parallel_emissions!(data, emissions, emissions_flipped, states, emission_log_pdf)
 end
 
