@@ -90,7 +90,7 @@ function run_synth_validation(output_file = Nothing;
                               eval_verbose = true,
                               model_verbose = false)
     if eval_verbose
-        logln("Starting evaluation")
+        logstrln("Starting evaluation")
     end
 
     if output_file != Nothing
@@ -103,7 +103,7 @@ function run_synth_validation(output_file = Nothing;
               for emission_dist = emission_fitters]
 
     if (eval_verbose)
-        logln("Pregenerating models")
+        logstrln("Pregenerating models")
     end
 
     data_models = [rand_HMM_model(p, k, sparsity = sparsity)
@@ -123,6 +123,10 @@ function run_synth_validation(output_file = Nothing;
         open(s -> serialize(s, results), output_file, "w")
     end
 
+    if (eval_verbose)
+        logstrln("Complete")
+    end
+
     results
 end
 
@@ -134,7 +138,7 @@ function evaluate_measures (validation_measure :: Function,
                             kwargs...)
     function repeat_evaluate(i)
         if verbose 
-            logln("\tIteration $i/$repeat")
+            logstrln("\tIteration $i/$repeat")
         end
         
         evaluate_measures(args...;
@@ -168,7 +172,7 @@ function evaluate_measures (# data, true_lables,
     if typeof(repeat) <: Integer
         function repeat_evaluate(i)
             if verbose 
-                logln("\tIteration $i/$repeat")
+                logstrln("\tIteration $i/$repeat")
             end
             
             evaluate_measures(validation_measure,
@@ -261,7 +265,7 @@ function evaluate_measures(validation_measures :: Array{Function},
 
     function evaluate_optimizer (optimizer_ix)
         if verbose
-            logln("Model optimizer $optimizer_ix/$(length(model_optimizers))")
+            logstrln("Model optimizer $optimizer_ix/$(length(model_optimizers))")
         end
 
         # each optimizer should get the same data
@@ -294,7 +298,7 @@ function evaluate_measures(validation_measures :: Array{Function},
                            kwargs...)
     function evaluate_generator (data_generator_ix)
         if verbose
-            logln("Generator $data_generator_ix/$(length(data_generators))")
+            logstrln("Generator $data_generator_ix/$(length(data_generators))")
         end
 
         evaluate_measures(validation_measures,

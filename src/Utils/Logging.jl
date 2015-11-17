@@ -1,10 +1,19 @@
 module Logging
 
-export logln
+export logstr, logstrln
 
-function logln(message,
-               indent = 0;
-               show_time = true)
+function logstrln(message :: String,
+                  indent :: Union(Type{Nothing}, Integer) = 0,
+                  show_time = true)
+    logstr(string(message, "\n"), indent, show_time)
+end
+
+function logstr(message :: String,
+                indent :: Union(Type{Nothing}, Integer) = 0,
+                show_time = true)
+    if indent == Nothing
+        return
+    end
 
     head = join(["\t" for i=1:(indent)], "")
 
@@ -13,7 +22,7 @@ function logln(message,
         head = string(t, " : \t", head)
     end
 
-    println(head, message)
+    print(head, message)
     flush(STDOUT)
 end
 
