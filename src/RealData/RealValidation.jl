@@ -12,6 +12,28 @@ estimate_filename = "estimate.dump"
 loglikelihood_filename = "loglikelihood.dump"
 model_filename = "model.dump"
 
+function dump_results_base (base_directory)
+    if !isdir(base_directory)
+        mkdir(base_directory)
+    end
+
+    function dump_results (dir_name, estimate, model, loglikelihood)
+        output_dir = join([base_directory, dir_name], "/")
+
+        if !isdir(output_dir)
+            mkdir(output_dir)
+        end
+
+        estimate_fp = join([output_dir, estimate_filename], "/")
+        loglikelihood_fp = join([output_dir, loglikelihood_filename], "/")
+        model_fp = join([output_dir, model_filename], "/")
+
+        open(s -> serialize(s, estimate), estimate_fp, "w")
+        open(s -> serialize(s, loglikelihood), loglikelihood_fp, "w")
+        open(s -> serialize(s, model), model_fp, "w")
+    end
+end
+
 function learn_CCN (data,
                     k,
                     output_dir = Nothing;
@@ -22,25 +44,14 @@ function learn_CCN (data,
                                                               data,
                                                               k,
                                                               fit_emissions,
-                                                              verbose = true))
-    # make sure output dir is available
-    if output_dir != Nothing && !isdir(output_dir)
-        mkdir(output_dir)
-    end
-
+                                                              verbose = true,
+                                                              result_writer = output_dir == Nothing ? Nothing : dump_results_base(output_dir)),
+                    verbose = true)
     if verbose
         logstrln("Starting real validation")
     end
 
-    (estimate, model, ll) = model_optimizer(data, k)
-
-    if output_dir != Nothing
-        estimate_filepath = "$output_dir/$estimate_filename"
-        loglikelihood_filepath = "$output_dir/$loglikelihood_filename"
-        model_filepath = "$output_dir/$model_filename"
-    end
-
-    (estimate, model, ll)
+    model_optimizer(data, k)
 end
 
 end 

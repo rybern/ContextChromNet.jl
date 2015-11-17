@@ -22,26 +22,38 @@ end
 function baum_welch (num_runs :: Integer,
                      args...;
                      verbose :: Union(Type{Nothing}, Integer) = 0,
+                     result_writer :: Union(Type{Nothing}, Function) = Nothing,
                      kwargs...)
+
     function run(i)
         if verbose != Nothing
             logstrln("BW Random Restart $i/$num_runs", verbose)
-            baum_welch(args...; verbose = verbose + 1, kwargs...)
+            (estimate, model, ll) = baum_welch(args...; verbose = verbose + 1, kwargs...)
         else
-            baum_welch(args...; verbose = Nothing, kwargs...)
+            (estimate, model, ll) = baum_welch(args...; verbose = Nothing, kwargs...)
         end
+
+        if result_writer != Nothing
+            result_writer("run_$i", estimate, model, ll)
+        end            
+        
+        (estimate, model, ll)
     end
 
     runs = map(run, 1:num_runs)
 
     sort!(runs, by = run -> run[3], rev = true)
 
+    best = runs[1]
+
+    result_writer("best", best...)
+
     if verbose != Nothing
         logstrln("$num_runs restarts complete, lls: $(map(r -> r[3], runs)), best: $(runs[1][3])",
               verbose)
     end
 
-    runs[1]
+    best
 end
 
 function baum_welch{N <: Number} (data :: DenseArray{N, 2},
