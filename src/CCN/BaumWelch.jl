@@ -46,7 +46,9 @@ function baum_welch (num_runs :: Integer,
 
     best = runs[1]
 
-    result_writer("best", best...)
+    if result_writer != Nothing
+        result_writer("best", best...)
+    end
 
     if verbose != Nothing
         logstrln("$num_runs restarts complete, lls: $(map(r -> r[3], runs)), best: $(runs[1][3])",
@@ -108,15 +110,14 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
     while true
         logstrln("Starting iteration $iteration", verbose)
 
-        logstr("E Step ... ", verbose == Nothing ? Nothing : verbose + 1)
+        logstrln("Starting E Step", verbose == Nothing ? Nothing : verbose + 1)
         (log_alpha, log_beta, newGammaPromise) = bw_e_step(spec,
                                                            log_transition,
                                                            emission_log_density,
                                                            log_initial)
-        logstrln("done", verbose == Nothing ? Nothing : 0, false)
+        logstrln("Finished E Step", verbose == Nothing ? Nothing : verbose + 1)
 
-
-        logstr("M Step ... ", verbose == Nothing ? Nothing : verbose + 1)
+        logstrln("Starting M Step", verbose == Nothing ? Nothing : verbose + 1)
         (newTransition, newInitial, newStates) = bw_m_step(spec,
                                                            log_transition, 
                                                            emission_log_density, 
@@ -125,8 +126,9 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
                                                            data,
                                                            log_alpha,
                                                            log_beta,
-                                                           newGammaPromise)
-        logstrln("done", verbose == Nothing ? Nothing : 0, false)
+                                                           newGammaPromise,
+                                                           verbose)
+        logstrln("Ending M Step", verbose == Nothing ? Nothing : verbose + 1)
 
         newGamma = fetch(newGammaPromise)
 
@@ -213,9 +215,9 @@ function bw_e_step(spec :: ProblemSpec,
     log_alpha_thread = @spawn forward(spec, log_transition, emission_log_density, log_initial)
     log_beta = backward(spec, log_transition, emission_log_density)
     log_alpha = fetch(log_alpha_thread)
-    gamma_promiseise = @spawn gamma(spec, log_alpha, log_beta)
+    gamma_promise = @spawn gamma(spec, log_alpha, log_beta)
 
-    (log_alpha, log_beta, gamma_promiseise)
+    (log_alpha, log_beta, gamma_promise)
 end
 
 function backward(spec,
@@ -280,19 +282,25 @@ function bw_m_step {N <: Number} (spec :: ProblemSpec,
                    data :: AbstractArray{N, 2},
                    log_alpha :: Array{Float64, 2},
                    log_beta :: Array{Float64, 2},
-                   gamma_promise) # promise of Array{Float, 2}
+                   gamma_promise,  # promise of Array{Float, 2}
+                   verbose)
 
+    logstr("Transition matrix ... ", verbose == Nothing ? Nothing : verbose + 2)
     newTransition = updateTransitionMatrix(spec,
                                            log_transition,
                                            emission_log_density,
                                            log_alpha,
                                            log_beta,
                                            gamma_promise)
+    logstrln("done", verbose == Nothing ? Nothing : 0, false)
 
     gma = fetch(gamma_promise)
     newInitial = gma[:, 1]
+
+    logstr("Fitting states ... ", verbose == Nothing ? Nothing : verbose + 2)
     newStates = fit_emissions(data, gma, states);
-    
+    logstrln("done", verbose == Nothing ? Nothing : 0, false)
+
     (newTransition, newInitial, newStates)
 end
 
@@ -351,8 +359,4 @@ function fit_states_to_labels{N <: Number} (labels :: Array{Int, 1},
     fit_emissions(data, labels_to_gamma(labels, k))
 end
 
-
-
 end
-
-
