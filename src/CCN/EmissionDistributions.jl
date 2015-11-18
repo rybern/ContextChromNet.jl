@@ -58,10 +58,9 @@ function fit_dist_to_state (fit_dist)
         gamma = gamma'
 
         weights = [gamma[:, state_ix] for state_ix = 1:k]
-        datas = [data for state_ix = 1:k]
 
-        new_states = pmap(fit_state,
-                          datas, weights, old_states)
+        new_states = pmap((weight, state) -> fit_state(data, weight, state),
+                          weights, old_states)
 
         convert(Array{HMMState, 1},
                 new_states)
