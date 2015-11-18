@@ -29,6 +29,34 @@ function log_pdf_dist_to_state (log_pdf_dist)
     end
 end
 
+function pmap_(f, lst1, lst2, pslist)
+    np = nprocs()  # determine the number of processes available
+    n = length(lst1)
+    results = cell(n)
+    i = 1
+    # function to produce the next work item from the queue.
+    # in this case it's just an index.
+    nextidx() = (idx=i; i+=1; idx)
+    @sync begin
+        for p=pslist
+            if p != myid() || np == 1
+                @async begin
+                    while true
+                        idx = nextidx()
+                        if idx > n
+                            break
+                        end
+                        results[idx] = remotecall_fetch(p, f, lst1[idx], lst2[idx])
+                    end
+                end
+            end
+        end
+    end
+    results
+end
+
+num_fit_procs = 3
+
 function fit_dist_to_state (fit_dist)
     function fit_state (data,
                         weights,
@@ -59,8 +87,9 @@ function fit_dist_to_state (fit_dist)
 
         weights = [gamma[:, state_ix] for state_ix = 1:k]
 
-        new_states = pmap((weight, state) -> fit_state(data, weight, state),
-                          weights, old_states)
+        new_states = pmap_((weight, state) -> fit_state(data, weight, state),
+                           weights, old_states,
+                           procs()[1:num_fit_procs])
 
         convert(Array{HMMState, 1},
                 new_states)
