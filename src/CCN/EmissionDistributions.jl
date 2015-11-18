@@ -30,9 +30,17 @@ function log_pdf_dist_to_state (log_pdf_dist)
 end
 
 function fit_dist_to_state (fit_dist)
-    function fit_state {N <: Number} (data :: AbstractArray{N, 2},
-                                      weights :: Array{Float64, 1},
-                                      old_state :: HMMState)
+    function fit_state (data,
+                        weights,
+                        old_state)
+#    function fit_state {N <: Number} (data :: AbstractArray{N, 2},
+#                                      weights :: Array{Float64, 1},
+#                                      old_state :: HMMState)
+#        println(sum(data))
+#        println(sum(weights))
+#        println(typeof(old_state))
+#        flush(STDOUT)
+        
         if old_state.active == false
             HMMState(Nothing, false)
         else
@@ -46,15 +54,26 @@ function fit_dist_to_state (fit_dist)
                                        [HMMState(Nothing, true)
                                         for i = 1:size(gamma, 1)])
         k = length(old_states)
-        new_states = Array(HMMState, k)
+
         gamma = gamma'
 
-        for state_ix = 1:k
-            weights = gamma[:, state_ix]
-            new_states[state_ix] = fit_state (data, weights, old_states[state_ix])
-        end
+        weights = [gamma[:, state_ix] for state_ix = 1:k]
+        datas = [data for state_ix = 1:k]
 
-        new_states
+        new_states = pmap(fit_state,
+                          datas, weights, old_states)
+
+        convert(Array{HMMState, 1},
+                new_states)
+
+#        new_states = Array(HMMState, k)
+
+#        for state_ix = 1:k
+#            weights = gamma[:, state_ix]
+#            new_states[state_ix] = fit_state (data, weights, old_states[state_ix])
+#        end
+
+#        new_states
     end
 end
 

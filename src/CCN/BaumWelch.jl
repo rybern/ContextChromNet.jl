@@ -283,7 +283,7 @@ function bw_m_step {N <: Number} (spec :: ProblemSpec,
                    log_alpha :: Array{Float64, 2},
                    log_beta :: Array{Float64, 2},
                    gamma_promise,  # promise of Array{Float, 2}
-                   verbose)
+                   verbose :: Union(Type{Nothing}, Integer))
 
     logstr("Transition matrix ... ", verbose == Nothing ? Nothing : verbose + 2)
     newTransition = updateTransitionMatrix(spec,
