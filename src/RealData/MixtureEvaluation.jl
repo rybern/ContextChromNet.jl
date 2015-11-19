@@ -5,7 +5,7 @@ export networks_edga_pca
 using EdgeUtils
 using MultivariateStats
 
-function networks_to_weigth_matrix (networks)
+function networks_to_weight_matrix (networks)
     weighted_factor_edges = [experiment_network_factor_edges(network)
                              for network = networks]
 

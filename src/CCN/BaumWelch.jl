@@ -37,25 +37,26 @@ function baum_welch (num_runs :: Integer,
             result_writer("run_$i", estimate, model, ll)
         end            
         
-        (estimate, model, ll)
+       # (estimate, model, ll)
+        Nothing
     end
 
     runs = map(run, 1:num_runs)
 
-    sort!(runs, by = run -> run[3], rev = true)
+  #  sort!(runs, by = run -> run[3], rev = true)
 
-    best = runs[1]
+  #  best = runs[1]
 
-    if result_writer != Nothing
-        result_writer("best", best...)
-    end
+ #   if result_writer != Nothing
+ #       result_writer("best", best...)
+  #  end
 
     if verbose != Nothing
-        logstrln("$num_runs restarts complete, lls: $(map(r -> r[3], runs)), best: $(runs[1][3])",
-              verbose)
+        logstrln("$num_runs restarts complete",
+                 verbose)
     end
 
-    best
+ #   best
 end
 
 function baum_welch{N <: Number} (data :: DenseArray{N, 2},
