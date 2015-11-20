@@ -68,8 +68,9 @@ function fit_dist_to_state (fit_dist)
 #        println(sum(weights))
 #        println(typeof(old_state))
 #        flush(STDOUT)
-        
-        if old_state.active == false
+        weights_sum = sum(weights)
+        weights_mean = weights_sum / length(weights)
+        if weights_sum < 1 || weights_mean < 1e-20 || old_state.active == false
             HMMState(Nothing, false)
         else
             HMMState(fit_dist(data, weights), true)
@@ -85,11 +86,13 @@ function fit_dist_to_state (fit_dist)
 
         gamma = gamma'
 
+        # should be view, haven't looked into how to get it to work
+        # with cov
         weights = [gamma[:, state_ix] for state_ix = 1:k]
 
         new_states = pmap_((weight, state) -> fit_state(data, weight, state),
                            weights, old_states,
-                           procs()[1:num_fit_procs])
+                           procs()[1:min(nprocs(), num_fit_procs)])
 
         convert(Array{HMMState, 1},
                 new_states)
@@ -106,13 +109,13 @@ function fit_dist_to_state (fit_dist)
 end
 
 function fit_dist_full_cov {N <: Number} (data :: AbstractArray{N, 2},
-                                          weights :: Array{Float64, 1})
+                                          weights)
     (mu, cov) = mean_and_cov(data, WeightVec(weights), vardim=2)
     safe_mv_normal(mu, cov)
 end
 
 function fit_dist_diag_cov {N <: Number} (data :: AbstractArray{N, 2},
-                                          weights :: Array{Float64, 1})
+                                          weights)
     p = size(data, 1)
 
     (mu, cov) = mean_and_cov(data, WeightVec(weights), vardim=2)
@@ -120,7 +123,7 @@ function fit_dist_diag_cov {N <: Number} (data :: AbstractArray{N, 2},
 end
 
 function fit_dist_glasso {N <: Number} (data :: AbstractArray{N, 2},
-                                        weights :: Array{Float64, 1})
+                                        weights)
     mu, cov_ = mean_and_cov(data, WeightVec(weights), vardim=2)
     cov = glasso_cov(data, weights)
 

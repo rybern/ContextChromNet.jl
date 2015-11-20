@@ -105,8 +105,14 @@ function network_enrichment (network,
                                                      "P62805",
                                                      "P84243"]))
     weighted_edges = experiment_network_factor_edges (network, header, mapping, target_blacklist)
-    edge_truth = Bool[edge[1] in pairs for edge in weighted_edges]
+    weighted_edge_enrichment(weighted_edges,
+                             pairs)
+end
 
+function weighted_edge_enrichment (weighted_edges,
+                                   pairs = load_pairs())
+    edge_truth = Bool[edge[1] in pairs
+                      for edge in weighted_edges]
     enrichment (edge_truth)
 end
 

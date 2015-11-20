@@ -5,6 +5,18 @@ export networks_edga_pca
 using EdgeUtils
 using MultivariateStats
 
+function primary_edges (pca, labels, ix = 1)
+    sort(collect(zip(labels, pca.proj[:, ix])),
+         by = t -> abs(t[2]),
+         rev = true)
+end
+
+function networks_edge_pca (networks)
+    labels, weight_matrix = networks_to_weight_matrix(networks)
+    trans, pca = edge_pca(weight_matrix)
+    trans, labels, pca
+end
+
 function networks_to_weight_matrix (networks)
     weighted_factor_edges = [experiment_network_factor_edges(network)
                              for network = networks]

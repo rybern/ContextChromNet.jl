@@ -171,7 +171,6 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
         logstrln("Converged", verbose)
     end
 
-
     (HMMEstimate(oldGamma), HMMStateModel(oldStates, transition), ll)
 
 end
