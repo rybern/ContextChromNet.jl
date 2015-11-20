@@ -1,19 +1,13 @@
-ERROR: `+` has no method matching +(::Type{Nothing}, ::Int64)
- in baum_welch at /home/ryanbernstein1/ContextChromNet/src/CCN/BaumWelch.jl:137
- in baum_welch at /home/ryanbernstein1/ContextChromNet/src/CCN/BaumWelch.jl:79
- in run at /home/ryanbernstein1/ContextChromNet/src/CCN/BaumWelch.jl:33
- in map at abstractarray.jl:1328
- in baum_welch at /home/ryanbernstein1/ContextChromNet/src/CCN/BaumWelch.jl:44
- in anonymous at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:101
- in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:200
- in repeat_evaluate at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:178
- in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:187
- in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:240
- in evaluate_optimizer at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:274
- in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:280
- in evaluate_generator at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:304
- in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:311
- in run_synth_validation at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:114
+ERROR: `start` has no method matching start(::Nothing)
+ in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:201
+ in repeat_evaluate at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:179
+ in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:188
+ in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:241
+ in evaluate_optimizer at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:275
+ in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:281
+ in evaluate_generator at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:305
+ in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:312
+ in run_synth_validation at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:115
  in include at ./boot.jl:245
  in include_from_node1 at loading.jl:128
  in process_options at ./client.jl:285
