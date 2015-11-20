@@ -52,7 +52,8 @@ function toy2()
                          n = 1000,
                          p = 30,
                          repeat = Nothing,
-                         model_verbose = true)
+                         model_verbose = false,
+                         eval_verbose = true)
 end
 
 function toy3()

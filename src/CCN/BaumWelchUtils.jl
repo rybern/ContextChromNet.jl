@@ -102,7 +102,7 @@ function transposeblock!(B::StridedMatrix,A::StridedMatrix,m::Int,n::Int,offseti
     return B
 end
 
-function mat_network_sparsity (mat, eps = 10e-8)
+function mat_network_sparsity (mat, eps = 1e-8)
     m = size(mat, 1)
 
     off_diags = 1 - eye(m)

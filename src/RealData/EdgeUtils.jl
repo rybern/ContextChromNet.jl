@@ -1,6 +1,6 @@
 module EdgeUtils
 
-export experiment_network_factor_edges, sorted_edges
+export experiment_network_factor_edges, sorted_edges, network_enrichment
 
 using Loading
 using BaumWelchUtils
@@ -11,7 +11,7 @@ using BaumWelchUtils
 # mapping -> experiment pair -> protien pair
 # mapping -> weighted experiment pairs -> weighted protien pairs
 
-function weighted_edges (network; eps = 10e-8, filter_small = false)
+function weighted_edges (network; eps = 1e-8, filter_small = false)
     (n, m) = size(network)
     
     edge_ixs = filter(t -> t[1] < t[2], [(i, j)
@@ -26,7 +26,7 @@ function weighted_edges (network; eps = 10e-8, filter_small = false)
     end
 end
 
-function sorted_edges (network; eps = 10e-8, filter_small = false)
+function sorted_edges (network; eps = 1e-8, filter_small = false)
     weighted = weighted_edges(network, eps = eps, filter_small = filter_small)
     map(t -> t[1], sort(weighted, by = t -> abs(t[2])))
 end
@@ -84,4 +84,50 @@ function experiment_network_factor_edges (network,
     wfs = weighted_exp_pairs_to_weighted_factor_pairs(wexps, mapping, target_blacklist)
 end
 
+# takes a list of edge prediction accuracy, sorted from most to least
+# confident. Need the whole list to calculate the number of potential
+# right answers (num_true)!
+function enrichment (sorted_truth :: Array{Bool, 1})
+    num_true = sum(sorted_truth)
+    num_guesses = length(sorted_truth)
+    num_correct = sum(sorted_truth[1:num_true])
+    num_expected = num_true * num_true / num_guesses
+
+    num_correct / num_expected
 end
+                     
+function network_enrichment (network,
+                             pairs = load_pairs(),
+                             header = load_filtered_header(),
+                             mapping = load_mapping(),
+                             target_blacklist = Set(["Q71DI3",
+                                                     "P0C0S5",
+                                                     "P62805",
+                                                     "P84243"]))
+    weighted_edges = experiment_network_factor_edges (network, header, mapping, target_blacklist)
+    edge_truth = Bool[edge[1] in pairs for edge in weighted_edges]
+
+    enrichment (edge_truth)
+end
+
+function network_factor_density (network,
+                                 header = load_filtered_header(),
+                                 mapping = load_mapping(),
+                                 target_blacklist = Set(["Q71DI3",
+                                                         "P0C0S5",
+                                                         "P62805",
+                                                         "P84243"]);
+                                 eps = 1e-8)
+    weighted_edges = experiment_network_factor_edges (network,
+                                                      header,
+                                                      mapping,
+                                                      target_blacklist)
+
+    num_total = length(weighted_edges)
+    num_claimed = length(filter(t -> abs(t[2]) > eps, weighted_edges))
+
+    num_claimed / num_total
+end
+
+end
+

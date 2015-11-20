@@ -134,7 +134,7 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
         newGamma = fetch(newGammaPromise)
 
 
-        logstr("Log-Like ... ", verbose + 1)        
+        logstr("Log-Like ... ", verbose == Nothing ? Nothing : verbose + 1)
         ll = log_likelihood(log_alpha)
         logstrln("done", verbose == Nothing ? Nothing : 0, false)
 
