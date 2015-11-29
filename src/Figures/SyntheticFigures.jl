@@ -2,6 +2,10 @@ module SyntheticFigures
 export run_standard_figures, measure_figure
 
 using BarchartPlots
+using PyPlot.(figure)
+using PyPlot.(savefig)
+using SimplePlot
+using HypothesisTests
 
 gen_names = map(string, [1,
                          0.5,
@@ -15,44 +19,146 @@ model_names = ["Truth",
 measure_names = ["Label accuracy",
                  "Network accuracy",
                  "Negative Test Log-Likelihood",
-                 "Train Log-Likelihood Accuracy",
+                 "Test Log-Likelihood",
                  "Network enrichment fold"]
 
 measure_perm = [1:5]
 model_perm = [2, 3, 4, 1]
 gen_perm = reverse([1:5])
 
-function run_standard_figures(results_file)
+function run_standard_figures(results_file = "saved_outputs/synthetic:n100k-k30-v3.dump")
     results = open(deserialize, results_file)
 
-    # label accuracy
-    measure_figure(results, 1, "Label Accuracy versus Sparsity", Nothing,
-                   y_limits = true,
-                   save_file = "results/label-acc.png")
+    label_acc = true
+    network_acc = false
+    tll = true
+    network_enrich = true
 
-    # network acc
-#    measure_figure(results,
-#                   2,
-#                   "Average network accuracy versus Sparsity",
-#                   Nothing,
-#                   preprocess = mean,
-#                   save_file = "results/network_acc.png")
+    # label accuracy
+    if label_acc
+        measure_figure_(results, 1, "Label Accuracy versus Model Density", Nothing,
+                        y_limits = true,
+                        save_file = "results/label-acc.png",
+                        model_ixs = model_perm[1:3])
+        pairs = measure_pair_test(results, 1)
+        println("Pair tests:")
+        map(println, pairs);
+    end
+
+    # Network acc
+    if network_acc
+        measure_figure(results,
+                       2,
+                       "Average network accuracy versus Model Density",
+                       Nothing,
+                       preprocess = mean,
+                       save_file = "results/network_acc.png")
+    end
 
     # loglikelihood
-    measure_figure(results, 3, "Negative Test Log-Likelihood versus Sparsity", Nothing,
-                   preprocess = (-),
-                   save_file = "results/neg-test-loglike.png",
-                   y_limits = true)
+    if tll
+        measure_figure_(results, 3, "Negative Test Log-Likelihood versus Model Density", Nothing,
+                        preprocess = (x -> -(x / 100000)),
+                        save_file = "results/neg-test-loglike.png",
+                        y_limits = true)
+    end
 
-    # network acc
-    measure_figure(results,
-                   5,
-                   "Average network enrichment fold versus Sparsity",
-                   Nothing,
-                   preprocess = mean,
-                   save_file = "results/net-enrichment.png",
-                   model_ixs = [3, 4, 1])
+    # network enrich
+    if network_enrich
+        measure_figure_(results,
+                        5,
+                        "Average network enrichment fold versus Model Density",
+                        Nothing,
+                        preprocess = mean,
+                        save_file = "results/net-enrichment.png",
+                        model_ixs = [3, 4, 1])
+    end
 end
+
+function measure_pair_test(results,
+                           measure_ix,
+                           preprocess = identity)
+    # gen, model, iteration
+    res = split_result_measures(results)[measure_ix]
+
+    gen_len = length(res)
+    model_len = length(res[1])
+
+    [[pvalue(SignedRankTest(float(res[gen_ix][model_perm[model_ix]]),
+                            float(res[gen_ix][model_perm[model_ix + 1]])))
+      for model_ix = 1:(model_len-1)]
+     for gen_ix = 1:gen_len]
+end  
+
+function measure_figure_(results,
+                         measure_ix,
+                         figure_title,
+                         relative = Nothing;
+                         model_ixs = model_perm,
+                         gen_ixs = gen_perm,
+                         preprocess = identity,
+                         save_file = Nothing,
+                         y_limits = false)
+
+    means, stds = measure_moments(results,
+                                  measure_ix,
+                                  relative,
+                                  preprocess = preprocess)
+
+    n_gens = length(means)
+    n_models = length(means[1])
+
+    bars = [bar(gen_names[gen_ixs],
+                [means[gen_ix][model_ix] for gen_ix = 1:n_gens],
+                model_names[model_ix])
+            for model_ix = model_ixs]
+
+    if y_limits
+        bars_ = [[Array{Float64, 1}[[means[gen_ix][model_ix]
+                                    for gen_ix = gen_ixs],
+                                   [stds[gen_ix][model_ix]
+                                    for gen_ix = gen_ixs]],
+                 model_names[model_ix]]
+                for model_ix = model_ixs]
+        y = reduce(vcat, [bari[1] for bari = bars_])
+        y_min = minimum(y)
+        y_max = maximum(y)
+        y_range = y_max - y_min
+        buffer = y_range / 20;
+
+        y_lower = y_min - buffer
+        y_upper = y_max + buffer
+
+        ylim = [y_lower, y_upper]
+    else 
+        ylim = false
+    end
+
+#    figure()
+
+    if ylim == false 
+        fig = plot(bars...,
+                   legend = "upper right",
+                   ylabel = measure_names[measure_perm][measure_ix],
+                   xlabel = "Density",
+                   title = figure_title)
+    else
+        fig = plot(bars...,
+                   legend = "upper right",
+                   ylabel = measure_names[measure_perm][measure_ix],
+                   xlabel = "Density",
+                   title = figure_title,
+                   ylim = ylim)
+    end
+    
+
+
+    if save_file != Nothing
+        savefig(save_file, dpi = 200)
+    end
+    show()
+end
+
 
 function measure_figure(results,
                         measure_ix,
@@ -63,8 +169,6 @@ function measure_figure(results,
                         preprocess = identity,
                         save_file = Nothing,
                         y_limits = false)
-
-    println(model_ixs)
 
     means, stds = measure_moments(results,
                                   measure_ix,
@@ -80,8 +184,6 @@ function measure_figure(results,
                                 for gen_ix = gen_ixs]],
              model_names[model_ix]]
             for model_ix = model_ixs]
-
-    println(bars)
 
     grouped_bar_plot(bars,
                      gen_names[gen_perm],

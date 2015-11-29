@@ -1,6 +1,6 @@
 module EdgeUtils
 
-export experiment_network_factor_edges, sorted_edges, network_enrichment
+export experiment_network_factor_edges, sorted_edges, network_enrichment, edge_enrichment
 
 using Loading
 using BaumWelchUtils
@@ -105,16 +105,23 @@ function network_enrichment (network,
                                                      "P62805",
                                                      "P84243"]))
     weighted_edges = experiment_network_factor_edges (network, header, mapping, target_blacklist)
-    weighted_edge_enrichment(weighted_edges,
-                             pairs)
+    edge_enrichment(weighted_edges,
+                    pairs)
 end
 
-function weighted_edge_enrichment (weighted_edges,
-                                   pairs = load_pairs())
-    edge_truth = Bool[edge[1] in pairs
-                      for edge in weighted_edges]
+function edge_enrichment {S} (weighted_edges :: Array{(S, Float64), 1},
+                          pairs = load_pairs())
+    edge_enrichment ([edge[1] for edge = weighted_edges],
+                     pairs)
+end
+
+function edge_enrichment {S} (edges :: Array{S, 1},
+                          pairs = load_pairs())
+    edge_truth = Bool[edge in pairs
+                      for edge in edges]
     enrichment (edge_truth)
 end
+
 
 function network_factor_density (network,
                                  header = load_filtered_header(),
@@ -135,5 +142,81 @@ function network_factor_density (network,
     num_claimed / num_total
 end
 
+function network_enrichment_overlap (n1, n2, num = 558)
+    es1 = experiment_network_factor_edges (n1)
+    es2 = experiment_network_factor_edges (n2)
+
+    edges_enrichment_overlap(es1, es2, num)
 end
 
+function edges_enrichment_overlap {A, B} (es1 :: Array{(A, Float64)},
+                                          es2 :: Array{(B, Float64)},
+                                          num = 558)
+    edges_enrichment_overlap(map(t -> t[1], es1),
+                             map(t -> t[1], es2),
+                             num)
+end
+
+function edges_enrichment_overlap {A, B} (es1 :: Array{(A, A)},
+                                          es2 :: Array{(B, B)}
+                                       , num = 558)
+    set1 = Set(es1[1:min(num, length(es1))])
+    set2 = Set(es2[1:min(num, length(es2))])
+
+    num_overlapping = length(intersect(set1, set2))
+
+    num_overlapping / num
+end
+
+#can only take two at the moment
+function max_by_position (ls)
+    l1 = ls[1]
+    l2 = ls[2]
+
+    aproxeq = (a, b) -> (a[1] == b[1] && a[2] == b[2]) || (a[1] == b[2] && a[2] == b[1])
+    max_edges = [(l1[i1][1], min(findfirst(t -> aproxeq(t[1], l1[i1][1]), l2), i1))
+                 for i1 = 1:length(l1)]
+    sorted_labeled = sort(max_edges,
+                          by = t -> t[2])
+    sorted = [t[1] for t = sorted_labeled]
+end
+
+function max_by_weight (ls,
+                        normalize = true)
+    if normalize
+        ls = map(edge_abs_zscores, ls)
+    end
+
+    l = vcat(ls...)
+
+    edges = sort(l,
+                 by = t -> normalize ? t[2] : abs(t[2]),
+                 rev = true)
+
+    unique_by(edges, t -> t[1])
+end
+
+function edge_abs_zscores (weighted_edges)
+    weights = abs([edge[2] for edge = weighted_edges])
+
+    m = mean(weights)
+    s = std(weights)
+
+    normalize = x -> (x - m) / s
+    normalized = [(t[1], normalize(abs(t[2])))
+                  for t = weighted_edges]
+
+    non_outliers = Bool[t[2] < 50 for t = normalized]
+
+    weights = abs([edge[2] for edge = weighted_edges[non_outliers]])
+
+    m = mean(weights)
+    s = std(weights)
+
+    normalize = x -> (x - m) / s
+    normalized = [(t[1], normalize(abs(t[2])))
+                  for t = weighted_edges]
+
+end
+
+end

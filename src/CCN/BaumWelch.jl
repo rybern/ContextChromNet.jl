@@ -72,7 +72,7 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
                     #                 gamma, states, ll,
                     #                 iteration ->
                     #                 Bool
-                    is_converged = ll_convergence(.01) :: Function,
+                    is_converged = ll_convergence(.05) :: Function,
                     verbose :: Union(Type{Nothing}, Integer) = 0)
 
 
