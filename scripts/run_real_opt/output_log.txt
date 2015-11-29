@@ -1,347 +1,247 @@
-Fri 20 Nov 2015 10:33:31 AM UTC : 	Starting real validation
-Fri 20 Nov 2015 10:33:32 AM UTC : 		BW Random Restart 1/5
-Fri 20 Nov 2015 10:37:15 AM UTC : 			Initial data sharing ... done
-Fri 20 Nov 2015 10:37:16 AM UTC : 			Initial emission calculation ... done
-Fri 20 Nov 2015 10:38:14 AM UTC : 			Starting EM
-Fri 20 Nov 2015 10:38:14 AM UTC : 			Starting iteration 1
-Fri 20 Nov 2015 10:38:14 AM UTC : 				Starting E Step
-Fri 20 Nov 2015 10:40:45 AM UTC : 				Finished E Step
-Fri 20 Nov 2015 10:40:45 AM UTC : 				Starting M Step
-Fri 20 Nov 2015 10:40:45 AM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 10:41:21 AM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 10:44:15 AM UTC : 				Ending M Step
-Fri 20 Nov 2015 10:44:16 AM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 10:44:16 AM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 10:45:09 AM UTC : 				Iteration complete; log-likelihood: 1.8319503002933672e8
-Fri 20 Nov 2015 10:45:09 AM UTC : 			Starting iteration 2
-Fri 20 Nov 2015 10:45:09 AM UTC : 				Starting E Step
-Fri 20 Nov 2015 10:47:18 AM UTC : 				Finished E Step
-Fri 20 Nov 2015 10:47:18 AM UTC : 				Starting M Step
-Fri 20 Nov 2015 10:47:18 AM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 10:47:52 AM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 10:51:30 AM UTC : 				Ending M Step
-Fri 20 Nov 2015 10:51:30 AM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 10:51:30 AM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 10:52:25 AM UTC : 				Iteration complete; log-likelihood: 3.411787178715851e8
-Fri 20 Nov 2015 10:52:25 AM UTC : 			Starting iteration 3
-Fri 20 Nov 2015 10:52:25 AM UTC : 				Starting E Step
-Fri 20 Nov 2015 10:54:24 AM UTC : 				Finished E Step
-Fri 20 Nov 2015 10:54:24 AM UTC : 				Starting M Step
-Fri 20 Nov 2015 10:54:24 AM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 10:54:56 AM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 11:00:37 AM UTC : 				Ending M Step
-Fri 20 Nov 2015 11:00:37 AM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 11:00:37 AM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 11:01:34 AM UTC : 				Iteration complete; log-likelihood: 1.154260224409584e9
-Fri 20 Nov 2015 11:01:34 AM UTC : 			Starting iteration 4
-Fri 20 Nov 2015 11:01:34 AM UTC : 				Starting E Step
-Fri 20 Nov 2015 11:03:35 AM UTC : 				Finished E Step
-Fri 20 Nov 2015 11:03:35 AM UTC : 				Starting M Step
-Fri 20 Nov 2015 11:03:35 AM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 11:04:06 AM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 11:15:13 AM UTC : 				Ending M Step
-Fri 20 Nov 2015 11:15:14 AM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 11:15:14 AM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 11:16:09 AM UTC : 				Iteration complete; log-likelihood: 1.7988730091384115e9
-Fri 20 Nov 2015 11:16:09 AM UTC : 			Starting iteration 5
-Fri 20 Nov 2015 11:16:09 AM UTC : 				Starting E Step
-Fri 20 Nov 2015 11:18:15 AM UTC : 				Finished E Step
-Fri 20 Nov 2015 11:18:15 AM UTC : 				Starting M Step
-Fri 20 Nov 2015 11:18:15 AM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 11:18:49 AM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 11:30:30 AM UTC : 				Ending M Step
-Fri 20 Nov 2015 11:30:31 AM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 11:30:31 AM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 11:31:24 AM UTC : 				Iteration complete; log-likelihood: 2.121457814253932e9
-Fri 20 Nov 2015 11:31:24 AM UTC : 			Starting iteration 6
-Fri 20 Nov 2015 11:31:24 AM UTC : 				Starting E Step
-Fri 20 Nov 2015 11:33:27 AM UTC : 				Finished E Step
-Fri 20 Nov 2015 11:33:27 AM UTC : 				Starting M Step
-Fri 20 Nov 2015 11:33:27 AM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 11:33:59 AM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 11:39:43 AM UTC : 				Ending M Step
-Fri 20 Nov 2015 11:39:43 AM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 11:39:43 AM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 11:40:38 AM UTC : 				Iteration complete; log-likelihood: 2.347736193504282e9
-Fri 20 Nov 2015 11:40:38 AM UTC : 			Starting iteration 7
-Fri 20 Nov 2015 11:40:38 AM UTC : 				Starting E Step
-Fri 20 Nov 2015 11:42:32 AM UTC : 				Finished E Step
-Fri 20 Nov 2015 11:42:32 AM UTC : 				Starting M Step
-Fri 20 Nov 2015 11:42:32 AM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 11:43:05 AM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 11:52:25 AM UTC : 				Ending M Step
-Fri 20 Nov 2015 11:52:26 AM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 11:52:26 AM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 11:53:18 AM UTC : 				Iteration complete; log-likelihood: 2.4124022065516458e9
-Fri 20 Nov 2015 11:53:18 AM UTC : 			Starting iteration 8
-Fri 20 Nov 2015 11:53:18 AM UTC : 				Starting E Step
-Fri 20 Nov 2015 11:55:09 AM UTC : 				Finished E Step
-Fri 20 Nov 2015 11:55:09 AM UTC : 				Starting M Step
-Fri 20 Nov 2015 11:55:09 AM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 11:55:41 AM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 12:05:01 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 12:05:01 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 12:05:01 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 12:05:56 PM UTC : 				Iteration complete; log-likelihood: 2.416677966822647e9
-Fri 20 Nov 2015 12:05:56 PM UTC : 			Converged
-Fri 20 Nov 2015 12:05:56 PM UTC : 		BW Random Restart 2/5
-Fri 20 Nov 2015 12:09:34 PM UTC : 			Initial data sharing ... done
-Fri 20 Nov 2015 12:09:35 PM UTC : 			Initial emission calculation ... done
-Fri 20 Nov 2015 12:10:28 PM UTC : 			Starting EM
-Fri 20 Nov 2015 12:10:28 PM UTC : 			Starting iteration 1
-Fri 20 Nov 2015 12:10:28 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 12:12:45 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 12:12:45 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 12:12:45 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 12:13:18 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 12:16:08 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 12:16:08 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 12:16:08 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 12:17:03 PM UTC : 				Iteration complete; log-likelihood: 1.8308234035482523e8
-Fri 20 Nov 2015 12:17:03 PM UTC : 			Starting iteration 2
-Fri 20 Nov 2015 12:17:03 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 12:19:06 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 12:19:06 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 12:19:06 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 12:19:38 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 12:22:48 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 12:22:48 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 12:22:48 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 12:23:42 PM UTC : 				Iteration complete; log-likelihood: 3.49079740011807e8
-Fri 20 Nov 2015 12:23:42 PM UTC : 			Starting iteration 3
-Fri 20 Nov 2015 12:23:42 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 12:25:28 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 12:25:28 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 12:25:28 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 12:26:00 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 12:28:50 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 12:28:50 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 12:28:50 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 12:29:46 PM UTC : 				Iteration complete; log-likelihood: 2.5027724252028314e197
-Fri 20 Nov 2015 12:29:46 PM UTC : 			Starting iteration 4
-Fri 20 Nov 2015 12:29:46 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 12:31:54 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 12:31:54 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 12:31:54 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 12:32:27 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 12:35:23 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 12:35:23 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 12:35:23 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 12:36:18 PM UTC : 				Iteration complete; log-likelihood: 1.2430828904707098e11
-Fri 20 Nov 2015 12:36:18 PM UTC : 			Converged
-Fri 20 Nov 2015 12:36:19 PM UTC : 		BW Random Restart 3/5
-Fri 20 Nov 2015 12:39:55 PM UTC : 			Initial data sharing ... done
-Fri 20 Nov 2015 12:39:56 PM UTC : 			Initial emission calculation ... done
-Fri 20 Nov 2015 12:40:50 PM UTC : 			Starting EM
-Fri 20 Nov 2015 12:40:50 PM UTC : 			Starting iteration 1
-Fri 20 Nov 2015 12:40:50 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 12:43:07 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 12:43:07 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 12:43:07 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 12:43:39 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 12:46:29 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 12:46:30 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 12:46:30 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 12:47:25 PM UTC : 				Iteration complete; log-likelihood: 1.8324486404269266e8
-Fri 20 Nov 2015 12:47:25 PM UTC : 			Starting iteration 2
-Fri 20 Nov 2015 12:47:25 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 12:49:36 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 12:49:36 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 12:49:36 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 12:50:08 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 12:53:16 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 12:53:16 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 12:53:16 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 12:54:12 PM UTC : 				Iteration complete; log-likelihood: 3.5873682941496795e8
-Fri 20 Nov 2015 12:54:12 PM UTC : 			Starting iteration 3
-Fri 20 Nov 2015 12:54:12 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 12:56:08 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 12:56:08 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 12:56:08 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 12:56:40 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 01:01:36 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 01:01:36 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 01:01:36 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 01:02:34 PM UTC : 				Iteration complete; log-likelihood: 1.1781893387395232e9
-Fri 20 Nov 2015 01:02:34 PM UTC : 			Starting iteration 4
-Fri 20 Nov 2015 01:02:34 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 01:04:29 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 01:04:29 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 01:04:29 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 01:05:02 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 01:28:00 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 01:28:00 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 01:28:00 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 01:28:56 PM UTC : 				Iteration complete; log-likelihood: 1.8003950676666286e9
-Fri 20 Nov 2015 01:28:56 PM UTC : 			Starting iteration 5
-Fri 20 Nov 2015 01:28:56 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 01:30:49 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 01:30:49 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 01:30:49 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 01:31:23 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 01:39:10 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 01:39:10 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 01:39:10 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 01:40:04 PM UTC : 				Iteration complete; log-likelihood: 2.0507351405311663e9
-Fri 20 Nov 2015 01:40:04 PM UTC : 			Starting iteration 6
-Fri 20 Nov 2015 01:40:04 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 01:41:56 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 01:41:56 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 01:41:56 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 01:42:27 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 01:51:46 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 01:51:47 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 01:51:47 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 01:52:40 PM UTC : 				Iteration complete; log-likelihood: 2.1592387049636145e9
-Fri 20 Nov 2015 01:52:40 PM UTC : 			Starting iteration 7
-Fri 20 Nov 2015 01:52:40 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 01:54:34 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 01:54:34 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 01:54:34 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 01:55:07 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 02:06:20 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 02:06:21 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 02:06:21 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 02:07:17 PM UTC : 				Iteration complete; log-likelihood: 2.1847040574853177e9
-Fri 20 Nov 2015 02:07:17 PM UTC : 			Starting iteration 8
-Fri 20 Nov 2015 02:07:17 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 02:09:11 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 02:09:11 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 02:09:11 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 02:09:44 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 02:21:24 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 02:21:24 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 02:21:24 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 02:22:18 PM UTC : 				Iteration complete; log-likelihood: 2.1930983356827865e9
-Fri 20 Nov 2015 02:22:18 PM UTC : 			Converged
-Fri 20 Nov 2015 02:22:18 PM UTC : 		BW Random Restart 4/5
-Fri 20 Nov 2015 02:25:59 PM UTC : 			Initial data sharing ... done
-Fri 20 Nov 2015 02:25:59 PM UTC : 			Initial emission calculation ... done
-Fri 20 Nov 2015 02:26:54 PM UTC : 			Starting EM
-Fri 20 Nov 2015 02:26:54 PM UTC : 			Starting iteration 1
-Fri 20 Nov 2015 02:26:54 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 02:29:11 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 02:29:11 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 02:29:11 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 02:29:45 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 02:32:37 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 02:32:37 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 02:32:37 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 02:33:30 PM UTC : 				Iteration complete; log-likelihood: 1.83294239236559e8
-Fri 20 Nov 2015 02:33:30 PM UTC : 			Starting iteration 2
-Fri 20 Nov 2015 02:33:30 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 02:35:33 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 02:35:33 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 02:35:33 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 02:36:05 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 02:39:24 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 02:39:24 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 02:39:24 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 02:40:18 PM UTC : 				Iteration complete; log-likelihood: 4.197016711215494e8
-Fri 20 Nov 2015 02:40:18 PM UTC : 			Starting iteration 3
-Fri 20 Nov 2015 02:40:18 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 02:42:20 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 02:42:20 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 02:42:20 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 02:42:53 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 02:47:18 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 02:47:19 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 02:47:19 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 02:48:16 PM UTC : 				Iteration complete; log-likelihood: 1.3326473930112176e9
-Fri 20 Nov 2015 02:48:16 PM UTC : 			Starting iteration 4
-Fri 20 Nov 2015 02:48:16 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 02:50:14 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 02:50:14 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 02:50:14 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 02:50:46 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 03:00:29 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 03:00:29 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 03:00:29 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 03:01:22 PM UTC : 				Iteration complete; log-likelihood: 1.6943871159053495e9
-Fri 20 Nov 2015 03:01:22 PM UTC : 			Starting iteration 5
-Fri 20 Nov 2015 03:01:22 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 03:03:25 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 03:03:25 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 03:03:25 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 03:03:58 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 03:11:21 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 03:11:22 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 03:11:22 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 03:12:17 PM UTC : 				Iteration complete; log-likelihood: 1.8757290515446484e9
-Fri 20 Nov 2015 03:12:17 PM UTC : 			Starting iteration 6
-Fri 20 Nov 2015 03:12:17 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 03:14:09 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 03:14:09 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 03:14:09 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 03:14:42 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 03:20:38 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 03:20:38 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 03:20:38 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 03:21:33 PM UTC : 				Iteration complete; log-likelihood: 1.9365881039791057e9
-Fri 20 Nov 2015 03:21:33 PM UTC : 			Starting iteration 7
-Fri 20 Nov 2015 03:21:33 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 03:23:42 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 03:23:42 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 03:23:42 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 03:24:15 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 03:38:31 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 03:38:31 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 03:38:31 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 03:39:25 PM UTC : 				Iteration complete; log-likelihood: 1.9866079218206553e9
-Fri 20 Nov 2015 03:39:25 PM UTC : 			Starting iteration 8
-Fri 20 Nov 2015 03:39:25 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 03:41:21 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 03:41:21 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 03:41:21 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 03:41:54 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 03:57:07 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 03:57:08 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 03:57:08 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 03:58:03 PM UTC : 				Iteration complete; log-likelihood: 1.9967755927896986e9
-Fri 20 Nov 2015 03:58:03 PM UTC : 			Converged
-Fri 20 Nov 2015 03:58:03 PM UTC : 		BW Random Restart 5/5
-Fri 20 Nov 2015 04:01:42 PM UTC : 			Initial data sharing ... done
-Fri 20 Nov 2015 04:01:42 PM UTC : 			Initial emission calculation ... done
-Fri 20 Nov 2015 04:02:37 PM UTC : 			Starting EM
-Fri 20 Nov 2015 04:02:37 PM UTC : 			Starting iteration 1
-Fri 20 Nov 2015 04:02:37 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 04:04:58 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 04:04:58 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 04:04:58 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 04:05:31 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 04:08:20 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 04:08:21 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 04:08:21 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 04:09:15 PM UTC : 				Iteration complete; log-likelihood: 1.8317406369844076e8
-Fri 20 Nov 2015 04:09:15 PM UTC : 			Starting iteration 2
-Fri 20 Nov 2015 04:09:15 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 04:11:26 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 04:11:26 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 04:11:26 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 04:11:58 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 04:15:07 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 04:15:07 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 04:15:07 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 04:16:03 PM UTC : 				Iteration complete; log-likelihood: 3.948858627442594e8
-Fri 20 Nov 2015 04:16:03 PM UTC : 			Starting iteration 3
-Fri 20 Nov 2015 04:16:03 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 04:18:01 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 04:18:01 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 04:18:01 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 04:18:32 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 04:24:26 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 04:24:26 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 04:24:26 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 04:25:24 PM UTC : 				Iteration complete; log-likelihood: 2.7745895657037845e9
-Fri 20 Nov 2015 04:25:24 PM UTC : 			Starting iteration 4
-Fri 20 Nov 2015 04:25:24 PM UTC : 				Starting E Step
-Fri 20 Nov 2015 04:27:25 PM UTC : 				Finished E Step
-Fri 20 Nov 2015 04:27:25 PM UTC : 				Starting M Step
-Fri 20 Nov 2015 04:27:25 PM UTC : 					Transition matrix ... done
-Fri 20 Nov 2015 04:27:57 PM UTC : 					Fitting states ... done
-Fri 20 Nov 2015 04:31:07 PM UTC : 				Ending M Step
-Fri 20 Nov 2015 04:31:07 PM UTC : 				Log-Like ... done
-Fri 20 Nov 2015 04:31:07 PM UTC : 				Emissions update ... done
-Fri 20 Nov 2015 04:32:03 PM UTC : 				Iteration complete; log-likelihood: 1.384195619589898e9
-Fri 20 Nov 2015 04:32:03 PM UTC : 			Converged
-Fri 20 Nov 2015 04:32:03 PM UTC : 		5 restarts complete
+Sun 29 Nov 2015 01:14:32 AM UTC : 	Starting real validation
+Sun 29 Nov 2015 01:14:33 AM UTC : 		BW Random Restart 1/5
+Sun 29 Nov 2015 01:18:30 AM UTC : 			Initial data sharing ... done
+Sun 29 Nov 2015 01:18:32 AM UTC : 			Initial emission calculation ... done
+Sun 29 Nov 2015 01:19:31 AM UTC : 			Starting EM
+Sun 29 Nov 2015 01:19:31 AM UTC : 			Starting iteration 1
+Sun 29 Nov 2015 01:19:31 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 01:21:48 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 01:21:48 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 01:21:48 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 01:22:24 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 01:25:34 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 01:25:34 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 01:25:34 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 01:26:27 AM UTC : 				Iteration complete; log-likelihood: 1.8327007002731648e8
+Sun 29 Nov 2015 01:26:27 AM UTC : 			Starting iteration 2
+Sun 29 Nov 2015 01:26:27 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 01:28:30 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 01:28:30 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 01:28:30 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 01:29:01 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 01:32:38 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 01:32:39 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 01:32:39 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 01:33:34 AM UTC : 				Iteration complete; log-likelihood: 4.2094145194160444e8
+Sun 29 Nov 2015 01:33:34 AM UTC : 			Starting iteration 3
+Sun 29 Nov 2015 01:33:34 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 01:35:24 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 01:35:24 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 01:35:24 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 01:35:56 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 01:46:33 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 01:46:33 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 01:46:33 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 01:47:27 AM UTC : 				Iteration complete; log-likelihood: 2.429316483001088e9
+Sun 29 Nov 2015 01:47:27 AM UTC : 			Starting iteration 4
+Sun 29 Nov 2015 01:47:27 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 01:49:22 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 01:49:22 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 01:49:22 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 01:49:54 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 01:52:46 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 01:52:47 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 01:52:47 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 01:53:40 AM UTC : 				Iteration complete; log-likelihood: 1.4245057439110525e9
+Sun 29 Nov 2015 01:53:40 AM UTC : 			Converged
+Sun 29 Nov 2015 01:53:40 AM UTC : 		BW Random Restart 2/5
+Sun 29 Nov 2015 01:57:09 AM UTC : 			Initial data sharing ... done
+Sun 29 Nov 2015 01:57:09 AM UTC : 			Initial emission calculation ... done
+Sun 29 Nov 2015 01:58:01 AM UTC : 			Starting EM
+Sun 29 Nov 2015 01:58:01 AM UTC : 			Starting iteration 1
+Sun 29 Nov 2015 01:58:01 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 02:00:17 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 02:00:17 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 02:00:17 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 02:00:50 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 02:03:37 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 02:03:38 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 02:03:38 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 02:04:32 AM UTC : 				Iteration complete; log-likelihood: 1.8309633259063724e8
+Sun 29 Nov 2015 02:04:32 AM UTC : 			Starting iteration 2
+Sun 29 Nov 2015 02:04:32 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 02:06:38 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 02:06:38 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 02:06:38 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 02:07:10 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 02:10:21 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 02:10:21 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 02:10:21 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 02:11:14 AM UTC : 				Iteration complete; log-likelihood: 3.4063733591479105e8
+Sun 29 Nov 2015 02:11:14 AM UTC : 			Starting iteration 3
+Sun 29 Nov 2015 02:11:14 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 02:13:18 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 02:13:18 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 02:13:18 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 02:13:50 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 02:18:46 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 02:18:46 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 02:18:46 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 02:19:43 AM UTC : 				Iteration complete; log-likelihood: 1.249219019931032e9
+Sun 29 Nov 2015 02:19:43 AM UTC : 			Starting iteration 4
+Sun 29 Nov 2015 02:19:43 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 02:21:34 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 02:21:34 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 02:21:34 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 02:22:05 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 02:31:53 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 02:31:53 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 02:31:53 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 02:32:48 AM UTC : 				Iteration complete; log-likelihood: 1.876530676905656e9
+Sun 29 Nov 2015 02:32:48 AM UTC : 			Starting iteration 5
+Sun 29 Nov 2015 02:32:48 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 02:34:39 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 02:34:39 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 02:34:39 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 02:35:11 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 02:39:59 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 02:40:00 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 02:40:00 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 02:40:53 AM UTC : 				Iteration complete; log-likelihood: 2.0735225920591376e9
+Sun 29 Nov 2015 02:40:53 AM UTC : 			Starting iteration 6
+Sun 29 Nov 2015 02:40:53 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 02:42:42 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 02:42:42 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 02:42:42 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 02:43:14 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 02:47:05 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 02:47:06 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 02:47:06 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 02:47:58 AM UTC : 				Iteration complete; log-likelihood: 2.1542141537382503e9
+Sun 29 Nov 2015 02:47:58 AM UTC : 			Converged
+Sun 29 Nov 2015 02:47:58 AM UTC : 		BW Random Restart 3/5
+Sun 29 Nov 2015 02:51:28 AM UTC : 			Initial data sharing ... done
+Sun 29 Nov 2015 02:51:28 AM UTC : 			Initial emission calculation ... done
+Sun 29 Nov 2015 02:52:21 AM UTC : 			Starting EM
+Sun 29 Nov 2015 02:52:21 AM UTC : 			Starting iteration 1
+Sun 29 Nov 2015 02:52:21 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 02:54:45 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 02:54:45 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 02:54:45 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 02:55:18 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 02:58:05 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 02:58:06 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 02:58:06 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 02:59:00 AM UTC : 				Iteration complete; log-likelihood: 1.8317475603803262e8
+Sun 29 Nov 2015 02:59:00 AM UTC : 			Starting iteration 2
+Sun 29 Nov 2015 02:59:00 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 03:01:02 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 03:01:02 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 03:01:02 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 03:01:34 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 03:05:04 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 03:05:04 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 03:05:04 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 03:05:59 AM UTC : 				Iteration complete; log-likelihood: 3.6622520870224255e8
+Sun 29 Nov 2015 03:05:59 AM UTC : 			Starting iteration 3
+Sun 29 Nov 2015 03:05:59 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 03:08:04 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 03:08:04 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 03:08:04 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 03:08:36 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 03:13:35 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 03:13:35 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 03:13:35 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 03:14:29 AM UTC : 				Iteration complete; log-likelihood: 1.6148263996471915e9
+Sun 29 Nov 2015 03:14:29 AM UTC : 			Starting iteration 4
+Sun 29 Nov 2015 03:14:29 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 03:16:25 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 03:16:25 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 03:16:25 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 03:16:58 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 03:20:07 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 03:20:07 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 03:20:07 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 03:21:04 AM UTC : 				Iteration complete; log-likelihood: 1.3492369178391538e9
+Sun 29 Nov 2015 03:21:04 AM UTC : 			Converged
+Sun 29 Nov 2015 03:21:04 AM UTC : 		BW Random Restart 4/5
+Sun 29 Nov 2015 03:24:32 AM UTC : 			Initial data sharing ... done
+Sun 29 Nov 2015 03:24:33 AM UTC : 			Initial emission calculation ... done
+Sun 29 Nov 2015 03:25:26 AM UTC : 			Starting EM
+Sun 29 Nov 2015 03:25:26 AM UTC : 			Starting iteration 1
+Sun 29 Nov 2015 03:25:26 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 03:27:41 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 03:27:41 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 03:27:41 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 03:28:15 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 03:31:00 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 03:31:01 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 03:31:01 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 03:31:53 AM UTC : 				Iteration complete; log-likelihood: 1.8319048418745524e8
+Sun 29 Nov 2015 03:31:53 AM UTC : 			Starting iteration 2
+Sun 29 Nov 2015 03:31:53 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 03:33:59 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 03:33:59 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 03:33:59 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 03:34:32 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 03:37:56 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 03:37:57 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 03:37:57 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 03:38:51 AM UTC : 				Iteration complete; log-likelihood: 3.6781934588501394e8
+Sun 29 Nov 2015 03:38:51 AM UTC : 			Starting iteration 3
+Sun 29 Nov 2015 03:38:51 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 03:40:41 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 03:40:41 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 03:40:41 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 03:41:13 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 03:46:19 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 03:46:19 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 03:46:19 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 03:47:13 AM UTC : 				Iteration complete; log-likelihood: 3.004911453045822e9
+Sun 29 Nov 2015 03:47:13 AM UTC : 			Starting iteration 4
+Sun 29 Nov 2015 03:47:13 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 03:49:04 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 03:49:04 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 03:49:04 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 03:49:36 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 03:53:27 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 03:53:27 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 03:53:27 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 03:54:19 AM UTC : 				Iteration complete; log-likelihood: 1.7415788848355682e9
+Sun 29 Nov 2015 03:54:19 AM UTC : 			Converged
+Sun 29 Nov 2015 03:54:20 AM UTC : 		BW Random Restart 5/5
+Sun 29 Nov 2015 03:57:50 AM UTC : 			Initial data sharing ... done
+Sun 29 Nov 2015 03:57:51 AM UTC : 			Initial emission calculation ... done
+Sun 29 Nov 2015 03:58:43 AM UTC : 			Starting EM
+Sun 29 Nov 2015 03:58:43 AM UTC : 			Starting iteration 1
+Sun 29 Nov 2015 03:58:43 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 04:00:56 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 04:00:56 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 04:00:56 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 04:01:29 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 04:04:13 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 04:04:13 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 04:04:13 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 04:05:08 AM UTC : 				Iteration complete; log-likelihood: 1.8327006067844513e8
+Sun 29 Nov 2015 04:05:08 AM UTC : 			Starting iteration 2
+Sun 29 Nov 2015 04:05:08 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 04:07:10 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 04:07:10 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 04:07:10 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 04:07:42 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 04:10:59 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 04:10:59 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 04:10:59 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 04:11:53 AM UTC : 				Iteration complete; log-likelihood: 3.6051632052668476e8
+Sun 29 Nov 2015 04:11:53 AM UTC : 			Starting iteration 3
+Sun 29 Nov 2015 04:11:53 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 04:13:32 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 04:13:32 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 04:13:32 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 04:14:03 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 04:22:53 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 04:22:53 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 04:22:53 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 04:23:54 AM UTC : 				Iteration complete; log-likelihood: 2.8447830401446614e9
+Sun 29 Nov 2015 04:23:54 AM UTC : 			Starting iteration 4
+Sun 29 Nov 2015 04:23:54 AM UTC : 				Starting E Step
+Sun 29 Nov 2015 04:25:48 AM UTC : 				Finished E Step
+Sun 29 Nov 2015 04:25:48 AM UTC : 				Starting M Step
+Sun 29 Nov 2015 04:25:48 AM UTC : 					Transition matrix ... done
+Sun 29 Nov 2015 04:26:21 AM UTC : 					Fitting states ... done
+Sun 29 Nov 2015 04:29:32 AM UTC : 				Ending M Step
+Sun 29 Nov 2015 04:29:33 AM UTC : 				Log-Like ... done
+Sun 29 Nov 2015 04:29:33 AM UTC : 				Emissions update ... done
+Sun 29 Nov 2015 04:30:25 AM UTC : 				Iteration complete; log-likelihood: 1.4133975706364667e9
+Sun 29 Nov 2015 04:30:25 AM UTC : 			Converged
+Sun 29 Nov 2015 04:30:25 AM UTC : 		5 restarts complete
