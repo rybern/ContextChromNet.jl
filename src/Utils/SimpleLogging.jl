@@ -1,4 +1,4 @@
-module Logging
+module SimpleLogging
 
 export logstr, logstrln
 
