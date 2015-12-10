@@ -1,4 +1,4 @@
-ERROR: `start` has no method matching start(::Nothing)
+ERROR: `start` has no method matching start(::Void)
  in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:201
  in repeat_evaluate at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:179
  in evaluate_measures at /home/ryanbernstein1/ContextChromNet/src/SyntheticData/SyntheticValidation.jl:188

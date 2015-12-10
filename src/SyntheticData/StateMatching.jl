@@ -37,7 +37,7 @@ end
 function optimal_label_permutation(labels1, labels2, k)
     perms = permutations(1:k)
     max_score = 0
-    max_perm = Nothing
+    max_perm = Void
 
     temp_labels = Array(Int64, size(labels1))
     for perm = perms
@@ -47,7 +47,7 @@ function optimal_label_permutation(labels1, labels2, k)
 
         score = sum(temp_labels .== labels2)
 
-        if max_perm == Nothing || score > max_score
+        if max_perm == Void || score > max_score
             max_perm = perm
             max_score = score            
         end

@@ -19,9 +19,9 @@ function rand_HMM_model(p :: Integer,
     for i = 1:k
         mu = rand(p) * avg_range - avg_range/2;
         cov = rand_cov(p, sparsity)
-        
+
         dists[i] = MvNormal(mu, cov)
-    end 
+    end
 
     states = map(dist -> HMMState(dist, true), dists)
     HMMStateModel(states, uniform_trans(k, dwell_prob))
@@ -31,12 +31,12 @@ function rand_HMM_data(n :: Integer,
                        p :: Integer,
                        k :: Integer,
                        model_generator = rand_HMM_model :: Function;
-                       starting_distribution = Nothing,
+                       starting_distribution = Void,
                        sample = state_sample)
     model = model_generator(p, k)
 
-    if starting_distribution == Nothing
-        starting_distribution = vec(sum(model.trans, 2))        
+    if starting_distribution == Void
+        starting_distribution = vec(sum(model.trans, 2))
     end
 
     rand_HMM_data(n, p,
@@ -48,7 +48,7 @@ end
 function rand_HMM_data(n :: Integer,
                        p :: Integer,
                        model :: HMMStateModel;
-                       starting_distribution = vec(sum(model.trans, 2)), 
+                       starting_distribution = vec(sum(model.trans, 2)),
                        sample = state_sample)
     data = Array(Float64, p, n)
 
@@ -160,7 +160,7 @@ end
             return false
         end
     end
-    
+
     m
 end
 
@@ -183,8 +183,8 @@ end
 function zero_rand_offdiag(M, valid = isposdef)
     (n, m) = size(M);
 
-    for i = shuffle([1:n])
-        for j = shuffle([1:(i-1)])
+    for i = shuffle(collect(1:n))
+        for j = shuffle(collect(1:(i-1)))
             if (M[i, j] == 0)
                 continue
             end
@@ -207,4 +207,3 @@ function zero_rand_offdiag(M, valid = isposdef)
 end
 
 end
-

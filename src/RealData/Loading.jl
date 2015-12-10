@@ -7,7 +7,7 @@ using JSON
 default_basedir = "data/ChromNet/ENCODE_build1.ChromNet"
 
 function with_data(f :: Function,
-                   n = Nothing;
+                   n = Void;
                    dataPredicate = x -> x["cellType"] == "K562")
     (data, header) = load_filtered(filterBy = dataPredicate,
                                    firstN = n)
@@ -23,7 +23,7 @@ function with_header(f,
 end
 
 function with_data_header(f,
-                          n = Nothing;
+                          n = Void;
                           dataPredicate = x -> x["cellType"] == "K562")
     (data, header) = load_filtered(filterBy = dataPredicate,
                                    firstN = n)
@@ -39,7 +39,7 @@ end
 
 function load_filtered(; filterBy = x -> x["cellType"] == "K562",
                        dir_name = default_basedir,
-                       firstN = Nothing)
+                       firstN = Void)
     header_all = load_header("$dir_name/header")
     metadata = load_metadata("$dir_name/metadata")
 
@@ -47,7 +47,7 @@ function load_filtered(; filterBy = x -> x["cellType"] == "K562",
 
     data_all = load_data("$dir_name/matrix")
 
-    data = firstN == Nothing ? data_all[allowedIndices, :] : data_all[allowedIndices, 1:firstN]
+    data = firstN == Void ? data_all[allowedIndices, :] : data_all[allowedIndices, 1:firstN]
     data = convert(Array{Bool}, data)
 
     header = header_all[allowedIndices]

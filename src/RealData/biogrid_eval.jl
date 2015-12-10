@@ -8,7 +8,7 @@ using loading
 
 # data: sample x track matrix
 # partition: boolean matrix
-function eval_promoter ()
+function eval_promoter()
     header = load_header(default_header)
 
     full_invcor = read_float_arr("data/inverse_data_correlation.Float64", 1415, 1415)
@@ -26,7 +26,7 @@ end
 
 # data: sample x track matrix
 # partition: boolean matrix
-function eval_partition (partition, data, header)
+function eval_partition(partition, data, header)
     print("Splitting data...")
     a, b = split_data(partition, data);
     print("done.\n")
@@ -42,18 +42,18 @@ function eval_partition (partition, data, header)
     max_score = biogrid_score_matrix(max_invcor, header);
     a_score = biogrid_score_matrix(a_invcor, header);
     b_score = biogrid_score_matrix(b_invcor, header);
-    
+
     a_score, b_score, max_score
 end
 
-function weighted_max (v1, v2, w)
+function weighted_max(v1, v2, w)
     r, c = size(v1)
     v_max = zeros(r, c)
     for y = 1:r
         for x = 1:c
             if abs(v1[y,x]) * w > abs(v2[y,x])
                 v_max[y,x] = v1[y,x]
-            else 
+            else
                 v_max[y,x] = v2[y,x]
             end
         end
@@ -61,22 +61,22 @@ function weighted_max (v1, v2, w)
     v_max
 end
 
-function full_weighted_max (v1, v2, w)
+function full_weighted_max(v1, v2, w)
     weighted_max(v1*w, v2, 1)
 end
 
 
 
-function precision_recall (true_pos, false_pos, false_neg)
+function precision_recall(true_pos, false_pos, false_neg)
     p = true_pos / (true_pos + false_pos);
     r = true_pos / (true_pos + false_neg);
     p, r
 end
 
 # Scott's GitHub has his version to compare
-function pr_curve (truth)
+function pr_curve(truth)
     n = size(truth)[1];
-    
+
     true_pos = 0;
     false_pos = 0;
     false_neg = count(identity, truth);
@@ -90,7 +90,7 @@ function pr_curve (truth)
             false_neg = false_neg - 1;
         else
             false_pos = false_pos + 1;
-        end 
+        end
 
         precision[i], recall[i] = precision_recall(true_pos, false_pos, false_neg);
     end
@@ -98,7 +98,7 @@ function pr_curve (truth)
     precision, recall
 end
 
-function auc (x, y)
+function auc(x, y)
     sum = 0;
     for i = 1:(size(x)[1]-1)
         y_avg = 0.5*(y[i] + y[i+1]);
@@ -108,7 +108,7 @@ function auc (x, y)
     sum
 end
 
-function pr_auc (truth)
+function pr_auc(truth)
     print("pr auc...")
     p, r = pr_curve(truth);
     res = auc(r, p);
@@ -116,7 +116,7 @@ function pr_auc (truth)
     res
 end
 
-function eval_partition (partition)
+function eval_partition(partition)
     data = load_data(default_data);
     header = load_header(default_header);
     eval_partition (partition, data, header);

@@ -36,7 +36,7 @@ function run_standard_figures(results_file = "saved_outputs/synthetic:n100k-k30-
 
     # label accuracy
     if label_acc
-        measure_figure_(results, 1, "Label Accuracy versus Model Density", Nothing,
+        measure_figure_(results, 1, "Label Accuracy versus Model Density", Void,
                         y_limits = true,
                         save_file = "results/label-acc.png",
                         model_ixs = model_perm[1:3])
@@ -50,14 +50,14 @@ function run_standard_figures(results_file = "saved_outputs/synthetic:n100k-k30-
         measure_figure(results,
                        2,
                        "Average network accuracy versus Model Density",
-                       Nothing,
+                       Void,
                        preprocess = mean,
                        save_file = "results/network_acc.png")
     end
 
     # loglikelihood
     if tll
-        measure_figure_(results, 3, "Negative Test Log-Likelihood versus Model Density", Nothing,
+        measure_figure_(results, 3, "Negative Test Log-Likelihood versus Model Density", Void,
                         preprocess = (x -> -(x / 100000)),
                         save_file = "results/neg-test-loglike.png",
                         y_limits = true)
@@ -68,7 +68,7 @@ function run_standard_figures(results_file = "saved_outputs/synthetic:n100k-k30-
         measure_figure_(results,
                         5,
                         "Average network enrichment fold versus Model Density",
-                        Nothing,
+                        Void,
                         preprocess = mean,
                         save_file = "results/net-enrichment.png",
                         model_ixs = [3, 4, 1])
@@ -93,11 +93,11 @@ end
 function measure_figure_(results,
                          measure_ix,
                          figure_title,
-                         relative = Nothing;
+                         relative = Void;
                          model_ixs = model_perm,
                          gen_ixs = gen_perm,
                          preprocess = identity,
-                         save_file = Nothing,
+                         save_file = Void,
                          y_limits = false)
 
     means, stds = measure_moments(results,
@@ -153,7 +153,7 @@ function measure_figure_(results,
     
 
 
-    if save_file != Nothing
+    if save_file != Void
         savefig(save_file, dpi = 200)
     end
     show()
@@ -163,11 +163,11 @@ end
 function measure_figure(results,
                         measure_ix,
                         figure_title,
-                        relative = Nothing;
+                        relative = Void;
                         model_ixs = model_perm,
                         gen_ixs = gen_perm,
                         preprocess = identity,
-                        save_file = Nothing,
+                        save_file = Void,
                         y_limits = false)
 
     means, stds = measure_moments(results,
@@ -190,7 +190,7 @@ function measure_figure(results,
                      "Density",
                      measure_names[measure_perm][measure_ix],
                      figure_title,
-                     dumpfile = save_file == Nothing ? false : save_file,
+                     dumpfile = save_file == Void ? false : save_file,
                      bar_width = .15,
                      y_limits = y_limits)
 end
@@ -208,7 +208,7 @@ end
 
 function measure_moments (results,
                           measure_index,
-                          relative = Nothing;
+                          relative = Void;
                           preprocess = identity)
     res = split_result_measures(results)[measure_index]
     gen_len = length(res)
@@ -218,7 +218,7 @@ function measure_moments (results,
              for model_ix = 1:model_len]
             for gen_ix = 1:gen_len]
 
-    if relative != Nothing
+    if relative != Void
         res = scale_measure(res, measure_index, relative)
     end
 

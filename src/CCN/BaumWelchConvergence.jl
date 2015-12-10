@@ -6,11 +6,11 @@ export delta_convergence, iteration_convergence, ll_convergence
 #                iteration ->
 #                Bool
 
-function delta_convergence (max_gamma_delta,
+function delta_convergence(max_gamma_delta,
                             max_cov_delta,
                             max_mean_delta)
 
-    function converged (oldGamma, oldStates, oldLL,
+    function converged(oldGamma, oldStates, oldLL,
                         newGamma, newStates, newLL,
                         iteration)
         oldK = size(newStates)[1]
@@ -31,7 +31,7 @@ function delta_convergence (max_gamma_delta,
     end
 end
 
-function iteration_convergence (halting_iteration)
+function iteration_convergence(halting_iteration)
     function converged (oldGamma, oldStates, oldLL,
                         newGamma, newStates, newLL,
                         iteration)
@@ -39,7 +39,7 @@ function iteration_convergence (halting_iteration)
     end
 end
 
-function ll_convergence (max_percent_change)
+function ll_convergence(max_percent_change)
     function converged (oldGamma, oldStates, oldLL,
                         newGamma, newStates, newLL,
                         iteration)
