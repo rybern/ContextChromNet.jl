@@ -4,6 +4,7 @@ export experiment_network_factor_edges, sorted_edges, network_enrichment, edge_e
 
 using Loading
 using BaumWelchUtils
+using Compat
 
 # network -> weighted indices (edges)
 # header -> indices -> experiment pair
@@ -13,7 +14,7 @@ using BaumWelchUtils
 
 function weighted_edges (network; eps = 1e-8, filter_small = false)
     (n, m) = size(network)
-    
+
     edge_ixs = filter(t -> t[1] < t[2], [(i, j)
                                          for i = 1:n, j = 1:m])
     wixs = [(ix, network[ix[1], ix[2]])
@@ -95,7 +96,7 @@ function enrichment (sorted_truth :: Array{Bool, 1})
 
     num_correct / num_expected
 end
-                     
+
 function network_enrichment (network,
                              pairs = load_pairs(),
                              header = load_filtered_header(),
@@ -109,7 +110,7 @@ function network_enrichment (network,
                     pairs)
 end
 
-function edge_enrichment {S} (weighted_edges :: Array{(S, Float64), 1},
+@compat function edge_enrichment {S} (weighted_edges :: Array{Tuple{S, Float64}, 1},
                           pairs = load_pairs())
     edge_enrichment ([edge[1] for edge = weighted_edges],
                      pairs)
@@ -149,16 +150,16 @@ function network_enrichment_overlap (n1, n2, num = 558)
     edges_enrichment_overlap(es1, es2, num)
 end
 
-function edges_enrichment_overlap {A, B} (es1 :: Array{(A, Float64)},
-                                          es2 :: Array{(B, Float64)},
+@compat function edges_enrichment_overlap {A, B} (es1 :: Array{Tuple{A, Float64}},
+                                          es2 :: Array{Tuple{B, Float64}},
                                           num = 558)
     edges_enrichment_overlap(map(t -> t[1], es1),
                              map(t -> t[1], es2),
                              num)
 end
 
-function edges_enrichment_overlap {A, B} (es1 :: Array{(A, A)},
-                                          es2 :: Array{(B, B)}
+@compat function edges_enrichment_overlap {A, B} (es1 :: Array{Tuple{A, A}},
+                                          es2 :: Array{Tuple{B, B}}
                                        , num = 558)
     set1 = Set(es1[1:min(num, length(es1))])
     set2 = Set(es2[1:min(num, length(es2))])
