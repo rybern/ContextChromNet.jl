@@ -8,7 +8,7 @@ using HMMTypes
 using ExtendedLogs
 using SharedEmissions
 
-using Logging
+using SimpleLogging
 using ArrayViews
 
 function toy()
@@ -62,7 +62,7 @@ end
 function baum_welch{N <: Number} (data :: DenseArray{N, 2},
                     k :: Integer,
                     fit_emissions = fit_full_cov :: Function, # data -> gamma -> State
-                    emission_log_pdf = dist_log_pdf :: Function;#data-> weights -> log probability
+                    emission_log_pdf = dist_log_pdf :: Function;# weights -> state -> data -> log probability
                     initial_model = HMMStateModel(fit_states_to_labels(rand(1:k, size(data, 2)),
                                                                        k,
                                                                        data,

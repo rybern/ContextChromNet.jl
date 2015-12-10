@@ -5,7 +5,7 @@ export learn_CCN
 using Loading
 using EmissionDistributions
 using BaumWelch
-using Logging
+using SimpleLogging
 
 
 estimate_filename = "estimate.dump"

@@ -8,7 +8,7 @@ using BaumWelch
 using SyntheticData
 using EmissionDistributions
 using BaumWelchUtils
-using Logging
+using SimpleLogging
 
 function ll_test()
     train_n = 10000
@@ -42,7 +42,7 @@ function toy()
 end
 
 function toy2()
-    run_synth_validation(emission_fitters = [fit_diag_cov, fit_full_cov, Nothing],
+    run_synth_validation(emission_fitters = [fit_diag_cov, fit_full_cov],
                          validations = [hard_label_accuracy_measure,
                                         hard_network_edge_accuracy_measure,
                                         test_loglikelihood_measure,
