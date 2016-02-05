@@ -96,7 +96,7 @@ function run_synth_validation(output_file = Nothing;
 
     if output_file != Nothing
         open(identity, output_file, "w")
-    end    
+    end
 
     models = [emission_dist == Nothing ? Nothing :
               (data, k) -> baum_welch(5, data, k, emission_dist,
@@ -198,9 +198,10 @@ function evaluate_measures (# data, true_lables,
 
     k = size(true_model.trans, 1)
     if model_optimizer != Nothing
+        result = model_optimizer(data_train, k)
         (found_estimate_unordered, found_model_unordered, found_ll) =
-            model_optimizer(data_train, k)
-    
+            result
+
         (found_estimate, found_model) = match_states(found_estimate_unordered,
                                                      found_model_unordered,
                                                      labels_train,
@@ -257,7 +258,8 @@ end
 #     results[model_ix][measure_ix]
 # end
 function evaluate_measures(validation_measures :: Array{Function},
-                           model_optimizers :: Array{Union(Type{Nothing},Function)},
+                           model_optimizers, # :: Array{Union(Type{Nothing},Function)},
+                           # model_optimizers :: Array{Function},
                            args...;
                            verbose = true,
                            include_true = true,
@@ -292,7 +294,7 @@ end
 #     results[gen_ix][model_ix][measure_ix]
 # end
 function evaluate_measures(validation_measures :: Array{Function},
-                           model_optimizers :: Array{Union(Type{Nothing},Function)},
+                           model_optimizers, # :: Array{Union(Type{Nothing},Function)},
                            data_generators :: Array{Function},
                            args...;
                            verbose = true,
@@ -306,11 +308,11 @@ function evaluate_measures(validation_measures :: Array{Function},
                           model_optimizers,
                           data_generators[data_generator_ix],
                           args...;
-                          kwargs...)  
-    end 
+                          kwargs...)
+    end
 
     [evaluate_generator(ix)
-     for ix = 1:length(data_generators)]                     
+     for ix = 1:length(data_generators)]
 end
 
 end
