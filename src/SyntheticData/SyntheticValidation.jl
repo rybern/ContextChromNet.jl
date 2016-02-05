@@ -9,6 +9,7 @@ using SyntheticData
 using EmissionDistributions
 using BaumWelchUtils
 using SimpleLogging
+using Compat
 
 function ll_test()
     train_n = 10000
@@ -51,14 +52,14 @@ function toy2()
                          sparsities = [.5],
                          n = 1000,
                          p = 30,
-                         repeat = Nothing,
+                         repeat = Void,
                          model_verbose = false,
                          eval_verbose = true)
 end
 
 function toy3()
     run_synth_validation("saved_outputs/synthetic:gen-model-measure-iter.dump",
-                         emission_fitters = [fit_full_cov, Nothing],
+                         emission_fitters = [fit_full_cov, Void],
                          validations = [hard_label_accuracy_measure,
                                         hard_network_edge_accuracy_measure,
                                         test_loglikelihood_measure,
@@ -69,11 +70,11 @@ function toy3()
                          model_verbose = false)
 end
 
-function run_synth_validation(output_file = Nothing;
+function run_synth_validation(output_file = Void;
                               n = 100000,
                               p = 30,
                               k = 5,
-                              emission_fitters = [Nothing,
+                              emission_fitters = [Void,
                                                   fit_diag_cov,
                                                   fit_glasso,
                                                   fit_full_cov],
@@ -94,13 +95,13 @@ function run_synth_validation(output_file = Nothing;
         logstrln("Starting evaluation")
     end
 
-    if output_file != Nothing
+    if output_file != Void
         open(identity, output_file, "w")
     end
 
-    models = [emission_dist == Nothing ? Nothing :
+    models = [emission_dist == Void ? Void :
               (data, k) -> baum_welch(5, data, k, emission_dist,
-                                      verbose = model_verbose ? eval_verbose : Nothing)
+                                      verbose = model_verbose ? eval_verbose : Void)
               for emission_dist = emission_fitters]
 
     if (eval_verbose)
@@ -120,7 +121,7 @@ function run_synth_validation(output_file = Nothing;
                                 repeat = repeat,
                                 verbose = eval_verbose)
 
-    if output_file != Nothing
+    if output_file != Void
         open(s -> serialize(s, results), output_file, "w")
     end
 
@@ -131,19 +132,19 @@ function run_synth_validation(output_file = Nothing;
     results
 end
 
-function evaluate_measures (validation_measure :: Function,
-                            model_optimizer :: Union(Type{Nothing},Function),
+@compat function evaluate_measures (validation_measure :: Function,
+                            model_optimizer :: Union{Type{Void},Function},
                             args...;
                             repeat :: Integer = 10,
                             verbose = true,
                             kwargs...)
     function repeat_evaluate(i)
-        if verbose 
+        if verbose
             logstrln("\tIteration $i/$repeat")
         end
-        
+
         evaluate_measures(args...;
-                          repeat = Nothing,
+                          repeat = Void,
                           verbose = verbose,
                           kwargs...)
     end
@@ -153,35 +154,35 @@ function evaluate_measures (validation_measure :: Function,
 end
 
 
-# if repeat != Nothing:
+# if repeat != Void:
 #     results[iteration_ix]
 # else:
 #     results
 # end
-function evaluate_measures (# data, true_lables,
+@compat function evaluate_measures (# data, true_lables,
                             # true_model, found_estimate, found_model,
                             # found_ll -> X
                             validation_measure :: Function,
                             #(data, k) -> (estimate, model, log-likelihood)
-                            model_optimizer :: Union(Type{Nothing},Function),
+                            model_optimizer :: Union{Type{Void},Function},
                             # n -> (data, labels, model)
                             data_generator :: Function = num -> rand_HMM_data(num, 6, 3),
                             train_n = 10000,
                             holdout_n = 10000;
-                            repeat = Nothing, # Should get here if integer
+                            repeat = Void, # Should get here if integer
                             verbose = true)
     if typeof(repeat) <: Integer
         function repeat_evaluate(i)
-            if verbose 
+            if verbose
                 logstrln("\tIteration $i/$repeat")
             end
-            
+
             evaluate_measures(validation_measure,
                               model_optimizer,
                               data_generator,
                               train_n,
                               holdout_n;
-                              repeat = Nothing,
+                              repeat = Void,
                               verbose = verbose)
         end
 
@@ -197,10 +198,9 @@ function evaluate_measures (# data, true_lables,
 
 
     k = size(true_model.trans, 1)
-    if model_optimizer != Nothing
-        result = model_optimizer(data_train, k)
+    if model_optimizer != Void
         (found_estimate_unordered, found_model_unordered, found_ll) =
-            result
+            model_optimizer(data_train, k)
 
         (found_estimate, found_model) = match_states(found_estimate_unordered,
                                                      found_model_unordered,
@@ -218,15 +218,15 @@ function evaluate_measures (# data, true_lables,
                        found_estimate, found_model, found_ll)
 end
 
-# if repeat != Nothing:
+# if repeat != Void:
 #     results[measure_ix][iteration_ix]
 # else:
 #     results[measure_ix]
 # end
-function evaluate_measures(validation_measures :: Array{Function},
-                           model_optimizer :: Union(Type{Nothing},Function),
+@compat function evaluate_measures(validation_measures :: Array{Function},
+                           model_optimizer :: Union{Type{Void},Function},
                            args...;
-                           repeat = Nothing,
+                           repeat = Void,
                            kwargs...)
     function validation_measure (data_train, labels_train,
                                  data_holdout, labels_holdout,
@@ -244,7 +244,7 @@ function evaluate_measures(validation_measures :: Array{Function},
                                 args...;
                                 repeat = repeat)
 
-    if repeat != Nothing
+    if repeat != Void
         [[iteration[measure_ix] for iteration = results]
          for measure_ix = 1:length(validation_measures)]
     else
@@ -252,14 +252,13 @@ function evaluate_measures(validation_measures :: Array{Function},
     end
 end
 
-# if repeat != Nothing:
+# if repeat != Void:
 #     results[model_ix][measure_ix][iteration_ix]
 # else:
 #     results[model_ix][measure_ix]
 # end
 function evaluate_measures(validation_measures :: Array{Function},
                            model_optimizers, # :: Array{Union(Type{Nothing},Function)},
-                           # model_optimizers :: Array{Function},
                            args...;
                            verbose = true,
                            include_true = true,
@@ -288,7 +287,7 @@ function evaluate_measures(validation_measures :: Array{Function},
     results
 end
 
-# if repeat != Nothing:
+# if repeat != Void:
 #     results[gen_ix][model_ix][measure_ix][iteration_ix]
 # else:
 #     results[gen_ix][model_ix][measure_ix]
@@ -316,4 +315,3 @@ function evaluate_measures(validation_measures :: Array{Function},
 end
 
 end
-

@@ -11,7 +11,7 @@ using BaumWelchUtils
 using Distributions
 using StatsBase
 
-function state_sample (state)
+function state_sample(state)
     if state.active
         rand(state.dist)
     else
@@ -19,7 +19,7 @@ function state_sample (state)
     end
 end
 
-function log_pdf_dist_to_state (log_pdf_dist)
+function log_pdf_dist_to_state(log_pdf_dist)
     function log_pdf_state (r, state, data)
         if state.active
             log_pdf_dist(r, state.dist, data)
@@ -57,8 +57,8 @@ end
 
 num_fit_procs = 3
 
-function fit_dist_to_state (fit_dist)
-    function fit_state (data,
+function fit_dist_to_state(fit_dist)
+    function fit_state(data,
                         weights,
                         old_state)
 #    function fit_state {N <: Number} (data :: AbstractArray{N, 2},
@@ -71,16 +71,16 @@ function fit_dist_to_state (fit_dist)
         weights_sum = sum(weights)
         weights_mean = weights_sum / length(weights)
         if weights_sum < 1 || weights_mean < 1e-20 || old_state.active == false
-            HMMState(Nothing, false)
+            HMMState(Void, false)
         else
             HMMState(fit_dist(data, weights), true)
         end
     end
 
-    function fit_states {N <: Number} (data :: AbstractArray{N, 2},
+    function fit_states{N <: Number}(data :: AbstractArray{N, 2},
                                        gamma :: Array{Float64, 2},
-                                       old_states :: Array{HMMState, 1} = 
-                                       [HMMState(Nothing, true)
+                                       old_states :: Array{HMMState, 1} =
+                                       [HMMState(Void, true)
                                         for i = 1:size(gamma, 1)])
         k = length(old_states)
 
@@ -108,13 +108,13 @@ function fit_dist_to_state (fit_dist)
     end
 end
 
-function fit_dist_full_cov {N <: Number} (data :: AbstractArray{N, 2},
+function fit_dist_full_cov{N <: Number}(data :: AbstractArray{N, 2},
                                           weights)
     (mu, cov) = mean_and_cov(data, WeightVec(weights), vardim=2)
     safe_mv_normal(mu, cov)
 end
 
-function fit_dist_diag_cov {N <: Number} (data :: AbstractArray{N, 2},
+function fit_dist_diag_cov{N <: Number}(data :: AbstractArray{N, 2},
                                           weights)
     p = size(data, 1)
 
@@ -122,7 +122,7 @@ function fit_dist_diag_cov {N <: Number} (data :: AbstractArray{N, 2},
     safe_mv_normal(mu, cov .* eye(p))
 end
 
-function fit_dist_glasso {N <: Number} (data :: AbstractArray{N, 2},
+function fit_dist_glasso{N <: Number}(data :: AbstractArray{N, 2},
                                         weights)
     mu, cov_ = mean_and_cov(data, WeightVec(weights), vardim=2)
     cov = glasso_cov(data, weights)
@@ -135,7 +135,7 @@ fit_diag_cov = fit_dist_to_state(fit_dist_diag_cov)
 fit_glasso = fit_dist_to_state(fit_dist_glasso)
 dist_log_pdf = log_pdf_dist_to_state (logpdf!)
 
-function safe_mv_normal(mu :: Array{Float64}, 
+function safe_mv_normal(mu :: Array{Float64},
                         cov :: Array{Float64, 2},
                         check_singular = false)
     try

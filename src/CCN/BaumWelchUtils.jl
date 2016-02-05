@@ -32,11 +32,11 @@ function force_pos_def(m)
     else
         return m
     end
-    
+
     error("can't force pos def. eigs are ", eig(m)[1])
 end
 
-function labels_to_gamma {I <: Integer} (labels :: Array{I, 1}, k :: Integer)
+function labels_to_gamma{I <: Integer}(labels :: Array{I, 1}, k :: Integer)
     n = length(labels)
     gamma = zeros(k, n)
     for i = 1:k
@@ -45,7 +45,7 @@ function labels_to_gamma {I <: Integer} (labels :: Array{I, 1}, k :: Integer)
     gamma
 end
 
-function gamma_to_labels (gamma :: Array{Float64, 2})
+function gamma_to_labels(gamma :: Array{Float64, 2})
     n = size(gamma, 2)
     [indmax(gamma[:, i]) for i = 1:n]
 end
@@ -102,18 +102,17 @@ function transposeblock!(B::StridedMatrix,A::StridedMatrix,m::Int,n::Int,offseti
     return B
 end
 
-function mat_network_sparsity (mat, eps = 1e-8)
+function mat_network_sparsity(mat, eps = 1e-8)
     m = size(mat, 1)
 
     off_diags = 1 - eye(m)
     off_diag_mat = mat .* off_diags
 
     non_zeros = mat .> eps
-    
+
     total_size = length(mat) - m
-    
+
     sum(non_zeros) / total_size
 end
 
 end
-

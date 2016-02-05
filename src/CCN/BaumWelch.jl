@@ -7,6 +7,7 @@ using EmissionDistributions
 using HMMTypes
 using ExtendedLogs
 using SharedEmissions
+using Compat
 
 using SimpleLogging
 using ArrayViews
@@ -14,26 +15,26 @@ using ArrayViews
 function toy()
     data = rand(3, 100)
     k = 2
-    (estimate, model, ll) = baum_welch(10, data, k, is_converged = ll_convergence(.01), verbose = Nothing)
+    (estimate, model, ll) = baum_welch(10, data, k, is_converged = ll_convergence(.01), verbose = Void)
     labels = gamma_to_labels(estimate.gamma)
     (labels, ll)
 end
 
-function baum_welch (num_runs :: Integer,
+@compat function baum_welch(num_runs :: Integer,
                      args...;
-                     verbose :: Union(Type{Nothing}, Integer) = 0,
-                     result_writer :: Union(Type{Nothing}, Function) = Nothing,
+                     verbose :: Union{Type{Void}, Integer} = 0,
+                     result_writer :: Union{Type{Void}, Function} = Void,
                      kwargs...)
     println("Running baum welch")
     function run(i)
-        if verbose != Nothing
+        if verbose != Void
             logstrln("BW Random Restart $i/$num_runs", verbose)
             (estimate, model, ll) = baum_welch(args...; verbose = verbose + 1, kwargs...)
         else
-            (estimate, model, ll) = baum_welch(args...; verbose = Nothing, kwargs...)
+            (estimate, model, ll) = baum_welch(args...; verbose = Void, kwargs...)
         end
 
-        if result_writer != Nothing
+        if result_writer != Void
             result_writer("run_$i", estimate, model, ll)
         end
 
@@ -46,11 +47,11 @@ function baum_welch (num_runs :: Integer,
 
   #  best = runs[1]
 
- #   if result_writer != Nothing
+ #   if result_writer != Void
  #       result_writer("best", best...)
   #  end
 
-    if verbose != Nothing
+    if verbose != Void
         logstrln("$num_runs restarts complete",
                  verbose)
     end
@@ -74,15 +75,15 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
                     #                 Bool
 #                    is_converged = ll_convergence(.05) :: Function,
                     is_converged = iteration_convergence(5) :: Function,
-                    verbose :: Union(Type{Nothing}, Integer) = 0)
+                    verbose :: Union(Type{Void}, Integer) = 0)
 
 
     logstr("Initial data sharing ... ", verbose)
     data = convert(SharedArray, data)
-    logstrln("done", verbose == Nothing ? Nothing : 0, false)
+    logstrln("done", verbose == Void ? Void : 0, false)
 
     spec = ProblemSpec(size(data, 2),
-                       size(data, 1), 
+                       size(data, 1),
                        k)
 
     emissions_flipped = SharedArray(Float64, spec.n, spec.k)
@@ -93,7 +94,7 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
 
     logstr("Initial emission calculation ... ", verbose)
     update_emissions!(emission_log_pdf, initial_model.states, data, emissions, emissions_flipped)
-    logstrln("done", verbose == Nothing ? Nothing : 0, false)
+    logstrln("done", verbose == Void ? Void : 0, false)
 
     initial = ones(k) / k
     log_initial = eln_arr(initial)
@@ -107,22 +108,22 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
 
 
     logstrln("Starting EM", verbose)
-    
+
     iteration = 1;
     while true
         logstrln("Starting iteration $iteration", verbose)
 
-        logstrln("Starting E Step", verbose == Nothing ? Nothing : verbose + 1)
+        logstrln("Starting E Step", verbose == Void ? Void : verbose + 1)
         (log_alpha, log_beta, newGammaPromise) = bw_e_step(spec,
                                                            log_transition,
                                                            emission_log_density,
                                                            log_initial)
-        logstrln("Finished E Step", verbose == Nothing ? Nothing : verbose + 1)
+        logstrln("Finished E Step", verbose == Void ? Void : verbose + 1)
 
-        logstrln("Starting M Step", verbose == Nothing ? Nothing : verbose + 1)
+        logstrln("Starting M Step", verbose == Void ? Void : verbose + 1)
         (newTransition, newInitial, newStates) = bw_m_step(spec,
-                                                           log_transition, 
-                                                           emission_log_density, 
+                                                           log_transition,
+                                                           emission_log_density,
                                                            fit_emissions,
                                                            oldStates,
                                                            data,
@@ -130,45 +131,45 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
                                                            log_beta,
                                                            newGammaPromise,
                                                            verbose)
-        logstrln("Ending M Step", verbose == Nothing ? Nothing : verbose + 1)
+        logstrln("Ending M Step", verbose == Void ? Void : verbose + 1)
 
         newGamma = fetch(newGammaPromise)
 
 
-        logstr("Log-Like ... ", verbose == Nothing ? Nothing : verbose + 1)
+        logstr("Log-Like ... ", verbose == Void ? Void : verbose + 1)
         ll = log_likelihood(log_alpha)
-        logstrln("done", verbose == Nothing ? Nothing : 0, false)
+        logstrln("done", verbose == Void ? Void : 0, false)
 
         converged = iteration != 1 && is_converged(oldGamma, oldStates, oldLL,
                                                    newGamma, newStates, ll,
                                                    iteration)
 
 
-        logstr("Emissions update ... ", verbose == Nothing ? Nothing : verbose + 1)
+        logstr("Emissions update ... ", verbose == Void ? Void : verbose + 1)
         update_emissions!(emission_log_pdf, newStates, data, emissions, emissions_flipped)
-        logstrln("done", verbose == Nothing ? Nothing : 0, false)
+        logstrln("done", verbose == Void ? Void : 0, false)
 
         initial = newInitial
         log_initial = eln_arr(initial)
 
         transition = newTransition
         log_transition = eln_arr(transition)
-        
+
         oldStates = newStates
         oldGamma = newGamma
 
         oldLL = ll
 
-        if verbose != Nothing
+        if verbose != Void
             logstrln("Iteration complete; log-likelihood: $ll", verbose + 1)
         end
 
         converged && break
-        
+
         iteration = iteration + 1
     end
 
-    if verbose != Nothing
+    if verbose != Void
         logstrln("Converged", verbose)
     end
 
@@ -177,7 +178,7 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
 end
 
 
-function log_likelihood (data, 
+function log_likelihood(data,
                          k,
                          model,
                          emission_log_pdf)
@@ -194,7 +195,7 @@ function log_likelihood (data,
     emissions_flipped = SharedArray(Float64, spec.n, spec.k)
     emissions = SharedArray(Float64, spec.k, spec.n)
     update_emissions!(emission_log_pdf, model.states, data, emissions, emissions_flipped)
-    
+
     function emission_log_density(t)
         view(emissions, :, t)
     end
@@ -240,7 +241,7 @@ function backward(spec,
     log_beta
 end
 
-function forward(spec, 
+function forward(spec,
                  log_transition,
                  emission_log_density,
                  log_initial)
@@ -275,7 +276,7 @@ function gamma(spec, log_alpha, log_beta)
     gma
 end
 
-function bw_m_step {N <: Number} (spec :: ProblemSpec,
+function bw_m_step{N <: Number}(spec :: ProblemSpec,
                    log_transition :: Array{Float64, 2},
                    emission_log_density :: Function, # Int -> log pdf
                    fit_emissions :: Function, # data -> weights -> old_states -> new_states
@@ -284,23 +285,23 @@ function bw_m_step {N <: Number} (spec :: ProblemSpec,
                    log_alpha :: Array{Float64, 2},
                    log_beta :: Array{Float64, 2},
                    gamma_promise,  # promise of Array{Float, 2}
-                   verbose :: Union(Type{Nothing}, Integer))
+                   verbose :: Union(Type{Void}, Integer))
 
-    logstr("Transition matrix ... ", verbose == Nothing ? Nothing : verbose + 2)
+    logstr("Transition matrix ... ", verbose == Void ? Void : verbose + 2)
     newTransition = updateTransitionMatrix(spec,
                                            log_transition,
                                            emission_log_density,
                                            log_alpha,
                                            log_beta,
                                            gamma_promise)
-    logstrln("done", verbose == Nothing ? Nothing : 0, false)
+    logstrln("done", verbose == Void ? Void : 0, false)
 
     gma = fetch(gamma_promise)
     newInitial = gma[:, 1]
 
-    logstr("Fitting states ... ", verbose == Nothing ? Nothing : verbose + 2)
+    logstr("Fitting states ... ", verbose == Void ? Void : verbose + 2)
     newStates = fit_emissions(data, gma, states);
-    logstrln("done", verbose == Nothing ? Nothing : 0, false)
+    logstrln("done", verbose == Void ? Void : 0, false)
 
     (newTransition, newInitial, newStates)
 end
@@ -328,7 +329,7 @@ function updateTransitionMatrix(spec,
     newTrans
 end
 
-function logEpsT(spec, 
+function logEpsT(spec,
                  log_transition,
                  emission_log_density,
                  log_alpha,
@@ -336,7 +337,7 @@ function logEpsT(spec,
                  t)
 
     log_betaWeighted = reshape(log_beta[:, t+1] + emission_log_density(t+1), (1, spec.k))
-    
+
     # (1 x k) .+ (k x k) .+ (k x 1)
     # the former is added to the matrix by repeating rows
     # the latter by repeating columns
@@ -352,7 +353,7 @@ function update_emissions!(emission_log_pdf, states, data, emissions, emissions_
     parallel_emissions!(data, emissions, emissions_flipped, states, emission_log_pdf)
 end
 
-function fit_states_to_labels{N <: Number} (labels :: Array{Int, 1},
+function fit_states_to_labels{N <: Number}(labels :: Array{Int, 1},
                                             k :: Integer,
                                             data :: Array{N, 2},
                                             # data -> weights -> new_states

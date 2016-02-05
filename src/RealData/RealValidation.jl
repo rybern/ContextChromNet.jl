@@ -36,7 +36,7 @@ end
 
 function learn_CCN (data,
                     k,
-                    output_dir = Nothing;
+                    output_dir = Void;
                     num_runs = 5,
                     fit_emissions = fit_full_cov,
                     #(data, k) -> (estimate, model, log-likelihood)
@@ -45,7 +45,7 @@ function learn_CCN (data,
                                                               k,
                                                               fit_emissions,
                                                               verbose = true,
-                                                              result_writer = output_dir == Nothing ? Nothing : dump_results_base(output_dir)),
+                                                              result_writer = output_dir == Void ? Void : dump_results_base(output_dir)),
                     verbose = true)
     if verbose
         logstrln("Starting real validation")
