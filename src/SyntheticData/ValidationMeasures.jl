@@ -1,10 +1,23 @@
 module ValidationMeasures
-export hard_label_accuracy_measure, hard_network_edge_accuracy_measure, network_enrichment_measure, train_loglikelihood_measure, test_loglikelihood_measure, whole_cov_data_measure, hard_network_edge_accuracy, hard_label_accuracy
+export join_measures, hard_label_accuracy_measure, hard_network_edge_accuracy_measure, network_enrichment_measure, train_loglikelihood_measure, test_loglikelihood_measure, whole_cov_data_measure, hard_network_edge_accuracy, hard_label_accuracy
 
 using EdgeUtils
 using BaumWelchUtils
 using BaumWelch
 using EmissionDistributions
+
+function join_measures(measures)
+    function joint_measure(data_train, labels_train,
+                           data_holdout, labels_holdout,
+                           true_model,
+                           found_estimate, found_model, found_ll)
+        [measure(data_train, labels_train,
+                 data_holdout, labels_holdout,
+                 true_model,
+                 found_estimate, found_model, found_ll)
+         for measure = measures]
+    end
+end
 
 function hard_label_accuracy_measure(data_train, labels_train,
                                       data_holdout, labels_holdout,

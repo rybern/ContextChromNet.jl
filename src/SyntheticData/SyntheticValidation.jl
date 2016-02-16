@@ -11,35 +11,11 @@ using BaumWelchUtils
 using SimpleLogging
 using Compat
 
-function ll_test()
-    train_n = 10000
-    holdout_n = 10000
-
-    data_all, labels_all, true_model = rand_HMM_data(train_n + holdout_n,
-                                                     5,
-                                                     5)
-    data_train = data_all[:, 1:train_n]
-    data_holdout = data_all[:, train_n+1:end]
-    labels_train = labels_all[1:train_n]
-    labels_holdout = labels_all[train_n+1:end]
-
-
-
-    estimate, found_model, train_returned_ll = baum_welch(5, data_train, 5)
-
-    train_true_ll = log_likelihood(data_train, 5, true_model, dist_log_pdf)
-    train_found_ll = log_likelihood(data_train, 5, found_model, dist_log_pdf)
-    holdout_true_ll = log_likelihood(data_holdout, 5, true_model, dist_log_pdf)
-    holdout_found_ll = log_likelihood(data_holdout, 5, found_model, dist_log_pdf)
-
-    train_returned_ll, train_found_ll, train_true_ll, holdout_found_ll, holdout_true_ll
-end
-
 function toy()
-    model = [baum_welch]
-    val = [network_enrichment_measure,
-           hard_network_edge_accuracy_measure]
-    evaluate_measures(val, model, repeat = 3)
+    model = [("Default BaumWelch", baum_welch)]
+    val = [("Network Enrichment", network_enrichment_measure),
+           ("Edge Accuracy", hard_network_edge_accuracy_measure)]
+    evaluate_measures(val, model, iterations = 3, verbose = 0)
 end
 
 function toy2()
@@ -74,7 +50,7 @@ function run_synth_validation(output_file = Void;
                               n = 100000,
                               p = 30,
                               k = 5,
-                              emission_fitters = [Void,
+                              emission_dists = [Void,
                                                   fit_diag_cov,
                                                   fit_glasso,
                                                   fit_full_cov],
@@ -91,22 +67,20 @@ function run_synth_validation(output_file = Void;
                               repeat = 10,
                               eval_verbose = true,
                               model_verbose = false)
-    if eval_verbose
-        logstrln("Starting evaluation")
-    end
+    verbose = eval_verbose ? 0 : Void
 
+    logstrln("Starting evaluation", verbose)
+
+    # Check to make sure the file is writable - fail early!
     if output_file != Void
         open(identity, output_file, "w")
     end
 
     models = [emission_dist == Void ? Void :
-              (data, k) -> baum_welch(5, data, k, emission_dist,
-                                      verbose = model_verbose ? eval_verbose : Void)
-              for emission_dist = emission_fitters]
+              (data, k) -> baum_welch(5, data, k, emission_dist, verbose)
+              for emission_dist = emission_dists]
 
-    if (eval_verbose)
-        logstrln("Pregenerating models")
-    end
+    logstrln("Pregenerating models", verbose)
 
     data_models = [rand_HMM_model(p, k, sparsity = sparsity)
                    for sparsity = sparsities]
@@ -119,86 +93,96 @@ function run_synth_validation(output_file = Void;
                                 n,
                                 n,
                                 repeat = repeat,
-                                verbose = eval_verbose)
+                                verbose = verbose)
+
 
     if output_file != Void
         open(s -> serialize(s, results), output_file, "w")
     end
 
-    if (eval_verbose)
-        logstrln("Complete")
-    end
+    logstrln("Complete", verbose)
 
     results
 end
 
-@compat function evaluate_measures(validation_measure :: Function,
-                            model_optimizer :: Union{Type{Void},Function},
-                            args...;
-                            repeat :: Integer = 10,
-                            verbose = true,
-                            kwargs...)
-    function repeat_evaluate(i)
-        if verbose
-            logstrln("\tIteration $i/$repeat")
-        end
+# Run multiple evaluation measures against multiple data generation methods and model optimizers.
+# The output is in the form (variable_labels, variables_ticks, results):
+#   variable_labels is an array of strings indicating the order of the indexing for the results
+#   variable_ticks is an array of the names of the values for each variable, in the same order as above.
+#            These names are passed in as an association list.
+#   results is a high dimensional array of the measure results indexed as indicated by variable_labels.
+function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Function}},
+                           # Array{Function} <: Array{Union{Function, Type{Void}}} is false.
+                           # Immature language, have to give up on type system sometimes :(
+                           model_optimizers, #:: Array{Tuple{ASCIIString,Union{Type{Void}, Function}}}
+                           data_generators :: Array{Tuple{ASCIIString, Function}} = [("Random_HMM_p6k3", num -> rand_HMM_data(num, 6, 3))],
+                           args...;
+                           iterations :: Int64 = 1,
+                           verbose = Void,
+                           kwargs...)
+    # Indicate the index order for the result tensor
+    variable_labels  = ("model_optimizer",  "data_generator",  "validation_measure",   "iteration")
+    variable_indices = ( model_optimizers,   data_generators,   validation_measures,  1:iterations)
+    variable_lengths = [length(var) for var = variable_indices]
 
-        evaluate_measures(args...;
-                          repeat = Void,
-                          verbose = verbose,
-                          kwargs...)
+    # Ordered array of arrays of function labels,
+    # e.g. [["val_measure1", "val_measure2"],
+    #       ["model_opt1", "model_opt2"]]
+    variable_ticks = [[t[1] for t = arr] for arr = variable_indices]
+
+    # Array indexed by each variable tick
+    result_tensor = convert(Array{Any, 4}, zeros(variable_lengths...))
+
+    # Combine all of the measures into one, which will be split up after use
+    joint_measure = join_measures([measure for (name, measure) = validation_measures])
+
+    # Evaluate the measures with each combination of variable
+    for (model_ix, (model_tick, model_fn)) = enumerate(model_optimizers)
+        logstrln("Model optimizer $model_ix/$(length(model_optimizers))", verbose)
+        for (gen_ix, (gen_tick, gen_fn)) = enumerate(data_generators)
+            logstrln("Generator $gen_ix/$(length(data_generators))", verbose)
+            for iter_ix = 1:iterations
+                logstrln("\tIteration $iter_ix/$iterations", verbose)
+
+                measure_results = evaluate_measure(joint_measure,
+                                                   model_fn,
+                                                   gen_fn,
+                                                   args...;
+                                                   kwargs...)
+
+                for val_ix = 1:length(validation_measures)
+                    result_tensor[model_ix, gen_ix, val_ix, iter_ix] = measure_results[val_ix]
+                end
+            end
+        end
     end
 
-    [repeat_evaluate(iteration)
-     for iteration = 1:repeat]
+    (variable_labels,
+     variable_ticks,
+     result_tensor)
 end
 
-
-# if repeat != Void:
-#     results[iteration_ix]
-# else:
-#     results
-# end
-@compat function evaluate_measures(# data, true_lables,
-                            # true_model, found_estimate, found_model,
-                            # found_ll -> X
-                            validation_measure :: Function,
-                            #(data, k) -> (estimate, model, log-likelihood)
-                            model_optimizer :: Union{Type{Void},Function},
-                            # n -> (data, labels, model)
-                            data_generator :: Function = num -> rand_HMM_data(num, 6, 3),
-                            train_n = 10000,
-                            holdout_n = 10000;
-                            repeat = Void, # Should get here if integer
-                            verbose = true)
-    if typeof(repeat) <: Integer
-        function repeat_evaluate(i)
-            if verbose
-                logstrln("\tIteration $i/$repeat")
-            end
-
-            evaluate_measures(validation_measure,
-                              model_optimizer,
-                              data_generator,
-                              train_n,
-                              holdout_n;
-                              repeat = Void,
-                              verbose = verbose)
-        end
-
-        return [repeat_evaluate(iteration)
-                for iteration = 1:repeat]
-    end
-
+# Create data using the data generator, optimize the model on the data, and then measure the model.
+function evaluate_measure(# See ValidationMeasures.jl
+                          validation_measure :: Function,
+                          #(data, k) -> (estimate, model, log-likelihood)
+                          model_optimizer :: Union{Type{Void},Function},
+                          # n -> (data, labels, model)
+                          data_generator :: Function = num -> rand_HMM_data(num, 6, 3);
+                          train_n = 10000,
+                          holdout_n = 10000)
+    # Initialize data
     data_all, labels_all, true_model = data_generator(train_n + holdout_n)
     data_train = data_all[:, 1:train_n]
     data_holdout = data_all[:, train_n+1:end]
     labels_train = labels_all[1:train_n]
     labels_holdout = labels_all[train_n+1:end]
 
-
     k = size(true_model.trans, 1)
+
+    # Build model
     if model_optimizer != Void
+        # Run optimizer
         (found_estimate_unordered, found_model_unordered, found_ll) =
             model_optimizer(data_train, k)
 
@@ -207,111 +191,17 @@ end
                                                      labels_train,
                                                      true_model)
     else
+        # If no optimizer provided, use the truth model
         found_estimate = HMMEstimate(labels_to_gamma(labels_train, k))
         found_model = true_model
         found_ll = log_likelihood(data_train, k, true_model, dist_log_pdf)
     end
 
+    # Measure the quality of the model
     validation_measure(data_train, labels_train,
                        data_holdout, labels_holdout,
                        true_model,
                        found_estimate, found_model, found_ll)
-end
-
-# if repeat != Void:
-#     results[measure_ix][iteration_ix]
-# else:
-#     results[measure_ix]
-# end
-@compat function evaluate_measures(validation_measures :: Array{Function},
-                           model_optimizer :: Union{Type{Void},Function},
-                           args...;
-                           repeat = Void,
-                           kwargs...)
-    function validation_measure(data_train, labels_train,
-                                 data_holdout, labels_holdout,
-                                 true_model,
-                                 found_estimate, found_model, found_ll)
-        [measure(data_train, labels_train,
-                 data_holdout, labels_holdout,
-                 true_model,
-                 found_estimate, found_model, found_ll)
-         for measure = validation_measures]
-    end
-
-    results = evaluate_measures(validation_measure,
-                                model_optimizer,
-                                args...;
-                                repeat = repeat)
-
-    if repeat != Void
-        [[iteration[measure_ix] for iteration = results]
-         for measure_ix = 1:length(validation_measures)]
-    else
-        results
-    end
-end
-
-# if repeat != Void:
-#     results[model_ix][measure_ix][iteration_ix]
-# else:
-#     results[model_ix][measure_ix]
-# end
-function evaluate_measures(validation_measures :: Array{Function},
-                           model_optimizers, # :: Array{Union(Type{Nothing},Function)},
-                           args...;
-                           verbose = true,
-                           include_true = true,
-                           kwargs...)
-    seed = 11
-
-    function evaluate_optimizer(optimizer_ix)
-        if verbose
-            logstrln("Model optimizer $optimizer_ix/$(length(model_optimizers))")
-        end
-
-        # each optimizer should get the same data
-        srand(seed)
-
-        evaluate_measures(validation_measures,
-                          model_optimizers[optimizer_ix],
-                          args...;
-                          kwargs...)
-    end
-
-    results = [evaluate_optimizer(ix)
-               for ix = 1:length(model_optimizers)]
-
-
-
-    results
-end
-
-# if repeat != Void:
-#     results[gen_ix][model_ix][measure_ix][iteration_ix]
-# else:
-#     results[gen_ix][model_ix][measure_ix]
-# end
-function evaluate_measures(validation_measures :: Array{Function},
-                           model_optimizers, # :: Array{Union(Type{Nothing},Function)},
-                           data_generators :: Array{Function},
-                           args...;
-                           verbose = true,
-                           kwargs...)
-    function evaluate_generator(data_generator_ix)
-        if verbose
-            logstrln("Generator $data_generator_ix/$(length(data_generators))")
-        end
-
-        evaluate_measures(validation_measures,
-                          model_optimizers,
-                          data_generators[data_generator_ix],
-                          args...;
-                          kwargs...)
-    end
-
-    [evaluate_generator(ix)
-     for ix = 1:length(data_generators)]
 end
 
 end

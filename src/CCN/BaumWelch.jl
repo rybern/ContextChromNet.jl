@@ -76,7 +76,7 @@ function baum_welch{N <: Number}(data :: DenseArray{N, 2},
                     #                 Bool
 #                    is_converged = ll_convergence(.05) :: Function,
                     is_converged = iteration_convergence(5) :: Function,
-                    verbose :: Union{Type{Void}, Integer} = 0)
+                    verbose :: Union{Type{Void}, Integer} = Void)
 
 
     logstr("Initial data sharing ... ", verbose)
