@@ -1,0 +1,882 @@
+               _
+   _       _ _(_)_     |  A fresh approach to technical computing
+  (_)     | (_) (_)    |  Documentation: http://docs.julialang.org
+   _ _   _| |_  __ _   |  Type "help()" for help.
+  | | | | | | |/ _' |  |
+  | | |_| | | | (_| |  |  Version 0.3.11 (2015-07-27 06:18 UTC)
+ _/ |\__'_|_|_|\__'_|  |  Official http://julialang.org release
+|__/                   |  x86_64-linux-gnu
+
+WARNING: Terminal not fully functional
+julia> include("/home/ryan/Documents/ContextChromNet/test/BaumWelch/BaumWelch.jl")
+ERROR: AbstractString not defined
+
+julia> ERROR: test error during length(BaumWelch.toy()) == 2
+type: typeassert: expected Union(Type{Nothing},Integer), got Type{None}
+ in toy at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:18
+ in anonymous at test.jl:62
+ in do_test at test.jl:37
+ in include at ./boot.jl:245
+ in include_from_node1 at ./loading.jl:128
+while loading /home/ryan/Documents/ContextChromNet/test/BaumWelch/BaumWelch.jl, in expression starting on line 4
+
+julia> using BaumWelch
+
+julia> BaumWelch.toy()
+ERROR: type: typeassert: expected Union(Type{Nothing},Integer), got Type{None}
+ in toy at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:18
+
+julia> include("/home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl")
+Warning: replacing module BaumWelch
+
+julia> BaumWelch.toy()
+ERROR: type: typeassert: expected Union(Type{Nothing},Integer), got Type{None}
+ in toy at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:18
+
+julia> Type{Nothing} == Type{Void}
+false
+
+
+julia> 
+    data = rand(3, 100)
+    k = 2
+    
+
+julia> 3x100 Array{Float64,2}:
+ 0.372826  0.378604  0.831048  0.132762  …  0.0417809  0.268182  0.157931
+ 0.315748  0.221547  0.88694   0.147414     0.471713   0.237899  0.774313
+ 0.648416  0.799208  0.861879  0.590057     0.59078    0.63328   0.48352 
+
+julia> 2
+
+julia> 
+julia> (estimate, model, ll) = baum_welch(10, data, k)
+Running baum welch
+Wed 10 Feb 2016 03:09:13 PM PST : 	BW Random Restart 1/10
+  C-c C-cexception on 1: ERROR: interrupt
+ in fit_dist_full_cov at /home/ryan/Documents/ContextChromNet/src/CCN/EmissionDistributions.jl:114
+ in fit_state at /home/ryan/Documents/ContextChromNet/src/CCN/EmissionDistributions.jl:76
+ in anonymous at /home/ryan/Documents/ContextChromNet/src/CCN/EmissionDistributions.jl:93
+ in anonymous at multi.jl:660
+ in run_work_thunk at multi.jl:621
+ in remotecall_fetch at multi.jl:694
+ in anonymous at task.jl:49
+ERROR: `convert` has no method matching convert(::Type{HMMState}, ::InterruptException)
+ in setindex! at array.jl:307
+ in copy! at abstractarray.jl:149
+ in fit_states at /home/ryan/Documents/ContextChromNet/src/CCN/EmissionDistributions.jl:97
+ in fit_states at /home/ryan/Documents/ContextChromNet/src/CCN/EmissionDistributions.jl:85
+ in baum_welch at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:81
+ in run at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:32
+ in map at abstractarray.jl:1328
+ in baum_welch at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:44
+
+julia> (estimate, model, ll) = baum_welch(10, data, k, is_converged = ll_convergence(.01), verbose = Void)
+ERROR: ll_convergence not defined
+
+julia> using BaumWelchConvergence
+
+julia> (estimate, model, ll) = baum_welch(10, data, k, is_converged = ll_convergence(.01), verbose = Void)
+ERROR: type: typeassert: expected Union(Type{Nothing},Integer), got Type{None}
+
+julia> (estimate, model, ll) = baum_welch(10, data, k, is_converged = ll_convergence(.01))
+Running baum welch
+Wed 10 Feb 2016 03:10:05 PM PST : 	BW Random Restart 1/10
+Wed 10 Feb 2016 03:10:05 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:10:05 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:10:06 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:10:06 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:10:06 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:10:06 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:10:06 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:10:06 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:10:07 PM PST : 				Fitting states ...   C-c C-cexception on 1: ERROR: interrupt
+ in replace_tupleref! at ./inference.jl:3016
+ in replace_tupleref! at ./inference.jl:3034 (repeats 2 times)
+ in tuple_elim_pass at ./inference.jl:3005
+ in typeinf at ./inference.jl:1548
+ in abstract_call_gf at ./inference.jl:726
+ in abstract_call at ./inference.jl:819
+ in abstract_eval_call at ./inference.jl:903
+ in abstract_eval at ./inference.jl:935
+ in abstract_interpret at ./inference.jl:1090
+ in typeinf at ./inference.jl:1409
+ in typeinf_ext at ./inference.jl:1216
+ in fit_state at /home/ryan/Documents/ContextChromNet/src/CCN/EmissionDistributions.jl:76
+ in anonymous at /home/ryan/Documents/ContextChromNet/src/CCN/EmissionDistributions.jl:93
+ in anonymous at multi.jl:660
+ in run_work_thunk at multi.jl:621
+ in remotecall_fetch at multi.jl:694
+ in anonymous at task.jl:49
+ERROR: `convert` has no method matching convert(::Type{HMMState}, ::InterruptException)
+ in setindex! at array.jl:307
+ in copy! at abstractarray.jl:149
+ in fit_states at /home/ryan/Documents/ContextChromNet/src/CCN/EmissionDistributions.jl:97
+ in bw_m_step at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:303
+ in baum_welch at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:124
+ in baum_welch at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:81
+ in run at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:32
+ in map at abstractarray.jl:1328
+ in baum_welch at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:44
+
+julia> (estimate, model, ll) = baum_welch(10, data, k, verbose = Void)
+ERROR: type: typeassert: expected Union(Type{Nothing},Integer), got Type{None}
+
+julia> include("/home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl")
+Warning: replacing module BaumWelch
+ERROR: type: instantiate_type: expected TypeConstructor, got Function
+ in include at ./boot.jl:245
+ in include_from_node1 at ./loading.jl:128
+while loading /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl, in expression starting on line 23
+
+julia> include("/home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl")
+Warning: replacing module BaumWelch
+
+julia> (estimate, model, ll) = baum_welch(10, data, k, verbose = 0)
+Running baum welch
+Wed 10 Feb 2016 03:13:28 PM PST : 	BW Random Restart 1/10
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.68417639042311
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 2
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.56142199856224
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 3
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.280203008116146
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 4
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.08809237561134
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 5
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.86888243614703
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 6
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.57387278269616
+Wed 10 Feb 2016 03:13:28 PM PST : 		Converged
+Wed 10 Feb 2016 03:13:28 PM PST : 	BW Random Restart 2/10
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.155744794239524
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 2
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.62209155238931
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 3
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.517479982407494
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 4
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.478401372371565
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 5
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.45130787816271
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 6
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.42348863556592
+Wed 10 Feb 2016 03:13:28 PM PST : 		Converged
+Wed 10 Feb 2016 03:13:28 PM PST : 	BW Random Restart 3/10
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -44.842215363672295
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 2
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.600031599399216
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 3
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.55084155612694
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 4
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.52664256467146
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 5
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.50667239829594
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 6
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.484375513077225
+Wed 10 Feb 2016 03:13:28 PM PST : 		Converged
+Wed 10 Feb 2016 03:13:28 PM PST : 	BW Random Restart 4/10
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.112510899120764
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 2
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.42010516166694
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 3
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.159873867206436
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 4
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.96760547852904
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 5
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.764656766123935
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 6
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.5304321771867
+Wed 10 Feb 2016 03:13:28 PM PST : 		Converged
+Wed 10 Feb 2016 03:13:28 PM PST : 	BW Random Restart 5/10
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -44.88545145546012
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 2
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.43894888439516
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 3
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.24780643335407
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 4
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.07843212341082
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 5
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.88537097020728
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 6
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.65802003057564
+Wed 10 Feb 2016 03:13:28 PM PST : 		Converged
+Wed 10 Feb 2016 03:13:28 PM PST : 	BW Random Restart 6/10
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -44.59729124685348
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 2
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.969747268264136
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 3
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.67114572736497
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 4
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.34037660026971
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 5
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -44.91740828338896
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 6
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -44.33916078974595
+Wed 10 Feb 2016 03:13:28 PM PST : 		Converged
+Wed 10 Feb 2016 03:13:28 PM PST : 	BW Random Restart 7/10
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.353333951327954
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 2
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.44349627896774
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 3
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.2292581466689
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 4
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.06047702201964
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 5
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.852918702500084
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 6
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.57349883615322
+Wed 10 Feb 2016 03:13:28 PM PST : 		Converged
+Wed 10 Feb 2016 03:13:28 PM PST : 	BW Random Restart 8/10
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -44.79589067330607
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 2
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.05371338156331
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 3
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.7016951811344
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 4
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.35876571266785
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 5
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -44.97073618126331
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 6
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -44.50411721129417
+Wed 10 Feb 2016 03:13:28 PM PST : 		Converged
+Wed 10 Feb 2016 03:13:28 PM PST : 	BW Random Restart 9/10
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -44.89874203024654
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 2
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.51861274109039
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 3
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.32039049960025
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 4
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.128883774111664
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 5
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.89739773845164
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 6
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.59788752403486
+Wed 10 Feb 2016 03:13:28 PM PST : 		Converged
+Wed 10 Feb 2016 03:13:28 PM PST : 	BW Random Restart 10/10
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial data sharing ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Initial emission calculation ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting EM
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 1
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.020200195147964
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 2
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.534400529090824
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 3
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.3029144799153
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 4
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -46.09796009921136
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 5
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.84590321172217
+Wed 10 Feb 2016 03:13:28 PM PST : 		Starting iteration 6
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Finished E Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Starting M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 				Transition matrix ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 				Fitting states ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Ending M Step
+Wed 10 Feb 2016 03:13:28 PM PST : 			Log-Like ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Emissions update ... done
+Wed 10 Feb 2016 03:13:28 PM PST : 			Iteration complete; log-likelihood: -45.50818299487831
+Wed 10 Feb 2016 03:13:28 PM PST : 		Converged
+Wed 10 Feb 2016 03:13:28 PM PST : 	10 restarts complete
+(HMMEstimate(2x100 Array{Float64,2}:
+ 0.0358024  0.274712  0.859116  0.195938  …  0.560141  0.258417  0.694257
+ 0.964198   0.725288  0.140884  0.804062     0.439859  0.741583  0.305743),HMMStateModel([HMMState(FullNormal(
+dim: 3
+μ: [0.479739,0.678471,0.549125]
+Σ: 3x3 Array{Float64,2}:
+  0.0871584   0.0114365  -0.00455748
+  0.0114365   0.0628138   0.0118628 
+ -0.00455748  0.0118628   0.0776229 
+)
+,true),HMMState(FullNormal(
+dim: 3
+μ: [0.491621,0.40173,0.495936]
+Σ: 3x3 Array{Float64,2}:
+ 0.0882941    0.00723617   0.0130398 
+ 0.00723617   0.0722354   -0.00634295
+ 0.0130398   -0.00634295   0.0518502 
+)
+,true)],2x2 Array{Float64,2}:
+ 0.446227  0.534241
+ 0.562427  0.417494),-44.33916078974595)
+
+julia> (estimate, model, ll) = baum_welch(10, data, k, verbose = Nothing)
+Running baum welch
+ERROR: type: typeassert: expected Union(Type{None},Integer), got Type{Nothing}
+ in baum_welch at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:81
+ in run at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:34
+ in map at abstractarray.jl:1328
+ in baum_welch at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:44
+
+julia> (estimate, model, ll) = baum_welch(10, data, k, verbose = Void)
+ERROR: type: typeassert: expected Union(Type{Nothing},Integer), got Type{None}
+
+
+julia> function blah(par :: Type{Void})
+1
+end
+blah (generic function with 1 method)
+
+julia> using Compat
+
+julia> @compat function blah2(par :: Type{Void})
+1
+end
+blah2 (generic function with 1 method)
+
+julia> blah(Nothing)
+ERROR: `blah` has no method matching blah(::Type{Nothing})
+
+julia> blah(Void)
+1
+
+julia> blah2(Void)
+ERROR: `blah2` has no method matching blah2(::Type{None})
+
+julia> blah2(Nothing)
+1
+
+julia> include("/home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl")
+Warning: replacing module BaumWelch
+ERROR: type: instantiate_type: expected TypeConstructor, got Function
+ in include at ./boot.jl:245
+ in include_from_node1 at ./loading.jl:128
+while loading /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl, in expression starting on line 23
+
+julia> Type{Void}
+Type{None}
+
+julia> include("/home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl")
+Warning: replacing module BaumWelch
+ERROR: syntax: more than one semicolon in argument list
+ in include at ./boot.jl:245
+ in include_from_node1 at ./loading.jl:128
+while loading /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl, in expression starting on line 23
+
+julia> include("/home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl")
+Warning: replacing module BaumWelch
+ERROR: syntax: more than one semicolon in argument list
+ in include at ./boot.jl:245
+ in include_from_node1 at ./loading.jl:128
+while loading /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl, in expression starting on line 23
+
+julia> include("/home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl")
+Warning: replacing module BaumWelch
+
+julia> BaumWelch.toy()
+Running baum welch
+ERROR: `logstr` has no method matching logstr(::ASCIIString, ::Type{None})
+ in baum_welch at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:82 (repeats 2 times)
+ in run at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:35
+ in map at abstractarray.jl:1328
+ in baum_welch at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:45
+ in toy at /home/ryan/Documents/ContextChromNet/src/CCN/BaumWelch.jl:18
+
+julia> 

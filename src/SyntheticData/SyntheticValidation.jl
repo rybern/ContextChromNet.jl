@@ -132,7 +132,7 @@ function run_synth_validation(output_file = Void;
     results
 end
 
-@compat function evaluate_measures (validation_measure :: Function,
+@compat function evaluate_measures(validation_measure :: Function,
                             model_optimizer :: Union{Type{Void},Function},
                             args...;
                             repeat :: Integer = 10,
@@ -159,7 +159,7 @@ end
 # else:
 #     results
 # end
-@compat function evaluate_measures (# data, true_lables,
+@compat function evaluate_measures(# data, true_lables,
                             # true_model, found_estimate, found_model,
                             # found_ll -> X
                             validation_measure :: Function,
@@ -228,7 +228,7 @@ end
                            args...;
                            repeat = Void,
                            kwargs...)
-    function validation_measure (data_train, labels_train,
+    function validation_measure(data_train, labels_train,
                                  data_holdout, labels_holdout,
                                  true_model,
                                  found_estimate, found_model, found_ll)
@@ -265,7 +265,7 @@ function evaluate_measures(validation_measures :: Array{Function},
                            kwargs...)
     seed = 11
 
-    function evaluate_optimizer (optimizer_ix)
+    function evaluate_optimizer(optimizer_ix)
         if verbose
             logstrln("Model optimizer $optimizer_ix/$(length(model_optimizers))")
         end
@@ -298,7 +298,7 @@ function evaluate_measures(validation_measures :: Array{Function},
                            args...;
                            verbose = true,
                            kwargs...)
-    function evaluate_generator (data_generator_ix)
+    function evaluate_generator(data_generator_ix)
         if verbose
             logstrln("Generator $data_generator_ix/$(length(data_generators))")
         end

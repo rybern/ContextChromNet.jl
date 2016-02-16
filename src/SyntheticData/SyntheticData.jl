@@ -118,7 +118,7 @@ function rand_cov(p, sparsity)
 end
 
 # TODO only measure sparsity of off-diags
-function mat_sparsity (m; eps = 10e-6)
+function mat_sparsity(m; eps = 10e-6)
     p = size(m, 1)
     num_zero = length(filter(x -> x < eps, m + eye(p)))
     num_zero / (p*p-p)

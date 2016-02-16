@@ -6,7 +6,7 @@ using BaumWelchUtils
 using BaumWelch
 using EmissionDistributions
 
-function hard_label_accuracy_measure (data_train, labels_train,
+function hard_label_accuracy_measure(data_train, labels_train,
                                       data_holdout, labels_holdout,
                                       true_model,
                                       found_estimate, found_model, found_ll)
@@ -24,14 +24,14 @@ function hard_network_edge_accuracy_measure(data_train, labels_train,
      for network_pair = collect(zip(found_networks, true_networks))]
 end
 
-function train_loglikelihood_measure (data_train, labels_train,
+function train_loglikelihood_measure(data_train, labels_train,
                                       data_holdout, labels_holdout,
                                       true_model,
                                       found_estimate, found_model, found_ll)
     found_ll
 end
 
-function test_loglikelihood_measure (data_train, labels_train,
+function test_loglikelihood_measure(data_train, labels_train,
                                      data_holdout, labels_holdout,
                                      true_model,
                                      found_estimate, found_model, found_ll)
@@ -39,14 +39,14 @@ function test_loglikelihood_measure (data_train, labels_train,
     log_likelihood(data_holdout, k, found_model, dist_log_pdf)
 end
 
-function whole_cov_data_measure (data_train, labels_train,
+function whole_cov_data_measure(data_train, labels_train,
                                  data_holdout, labels_holdout,
                                  true_model,
                                  found_estimate, found_model, found_ll)
     cov(data)
 end
 
-function network_enrichment_measure (data_train, labels_train,
+function network_enrichment_measure(data_train, labels_train,
                                      data_holdout, labels_holdout,
                                      true_model,
                                      found_estimate, found_model, found_ll)
@@ -57,7 +57,7 @@ function network_enrichment_measure (data_train, labels_train,
      for network_pair = collect(zip(found_networks, true_networks))]
 end
 
-function network_enrichment (found_network, true_network; eps = 1e-8)
+function network_enrichment(found_network, true_network; eps = 1e-8)
     true_edges = Set(sorted_edges(true_network, eps = eps, filter_small = true))
     num_true_edges = length(true_edges)
 
@@ -75,18 +75,18 @@ function network_enrichment (found_network, true_network; eps = 1e-8)
     found_true / random_true
 end
 
-function hard_label_accuracy (gamma, true_labels)
+function hard_label_accuracy(gamma, true_labels)
     found_labels = gamma_to_labels(gamma)
     accuracy(found_labels, true_labels)
 end
 
-function hard_network_edge_accuracy (found_mat, true_mat, eps = 1e-8)
+function hard_network_edge_accuracy(found_mat, true_mat, eps = 1e-8)
     found_network = abs(found_mat) .> eps
     true_network = abs(true_mat) .> eps
     accuracy(found_network, true_network)
 end
 
-function accuracy {T <: Any} (vec1 :: AbstractArray{T},
+function accuracy{T <: Any}(vec1 :: AbstractArray{T},
                               vec2 :: AbstractArray{T})
     sum(map((==), vec1, vec2)) / length(vec1)
 end

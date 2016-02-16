@@ -15,17 +15,18 @@ using ArrayViews
 function toy()
     data = rand(3, 100)
     k = 2
-    (estimate, model, ll) = baum_welch(10, data, k, is_converged = ll_convergence(.01), verbose = Void)
+    (estimate, model, ll) = baum_welch(10, data, k, is_converged = ll_convergence(.01), verbose = 1)
     labels = gamma_to_labels(estimate.gamma)
     (labels, ll)
 end
 
-@compat function baum_welch(num_runs :: Integer,
-                     args...;
-                     verbose :: Union{Type{Void}, Integer} = 0,
-                     result_writer :: Union{Type{Void}, Function} = Void,
-                     kwargs...)
+function baum_welch(num_runs :: Integer,
+                            args...;
+                            verbose = Void, # :: Union{Type{Void}, Integer} = 0,
+                            result_writer = Void, # :: Union{Type{Void}, Function} = Void,
+                            kwargs...)
     println("Running baum welch")
+    flush(STDOUT)
     function run(i)
         if verbose != Void
             logstrln("BW Random Restart $i/$num_runs", verbose)
@@ -60,7 +61,7 @@ end
 end
 
 
-function baum_welch{N <: Number} (data :: DenseArray{N, 2},
+function baum_welch{N <: Number}(data :: DenseArray{N, 2},
                     k :: Integer,
                     fit_emissions = fit_full_cov :: Function, # data -> gamma -> State
                     emission_log_pdf = dist_log_pdf :: Function;# weights -> state -> data -> log probability
@@ -75,7 +76,7 @@ function baum_welch{N <: Number} (data :: DenseArray{N, 2},
                     #                 Bool
 #                    is_converged = ll_convergence(.05) :: Function,
                     is_converged = iteration_convergence(5) :: Function,
-                    verbose :: Union(Type{Void}, Integer) = 0)
+                    verbose :: Union{Type{Void}, Integer} = 0)
 
 
     logstr("Initial data sharing ... ", verbose)
@@ -285,7 +286,7 @@ function bw_m_step{N <: Number}(spec :: ProblemSpec,
                    log_alpha :: Array{Float64, 2},
                    log_beta :: Array{Float64, 2},
                    gamma_promise,  # promise of Array{Float, 2}
-                   verbose :: Union(Type{Void}, Integer))
+                   verbose :: Union{Type{Void}, Integer})
 
     logstr("Transition matrix ... ", verbose == Void ? Void : verbose + 2)
     newTransition = updateTransitionMatrix(spec,

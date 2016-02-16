@@ -33,7 +33,7 @@ function fill_emissions!(to, buffer, data, interval, states, emission_dist!)
         emission_dist!(view(buffer, interval, si), state, view(data, :, interval))
     end     
 
-    transpose!(view(to, :, interval), view(buffer, interval, :))
+    BaumWelchUtils.transpose!(view(to, :, interval), view(buffer, interval, :))
 end
 
 function parallel_emissions!(sh_data, sh_emissions, sh_emission_buffer, states, emission_dist!)

@@ -20,7 +20,7 @@ function state_sample(state)
 end
 
 function log_pdf_dist_to_state(log_pdf_dist)
-    function log_pdf_state (r, state, data)
+    function log_pdf_state(r, state, data)
         if state.active
             log_pdf_dist(r, state.dist, data)
         else
@@ -109,13 +109,13 @@ function fit_dist_to_state(fit_dist)
 end
 
 function fit_dist_full_cov{N <: Number}(data :: AbstractArray{N, 2},
-                                          weights)
+                                        weights)
     (mu, cov) = mean_and_cov(data, WeightVec(weights), vardim=2)
     safe_mv_normal(mu, cov)
 end
 
 function fit_dist_diag_cov{N <: Number}(data :: AbstractArray{N, 2},
-                                          weights)
+                                        weights)
     p = size(data, 1)
 
     (mu, cov) = mean_and_cov(data, WeightVec(weights), vardim=2)
@@ -123,7 +123,7 @@ function fit_dist_diag_cov{N <: Number}(data :: AbstractArray{N, 2},
 end
 
 function fit_dist_glasso{N <: Number}(data :: AbstractArray{N, 2},
-                                        weights)
+                                      weights)
     mu, cov_ = mean_and_cov(data, WeightVec(weights), vardim=2)
     cov = glasso_cov(data, weights)
 
@@ -133,7 +133,7 @@ end
 fit_full_cov = fit_dist_to_state(fit_dist_full_cov)
 fit_diag_cov = fit_dist_to_state(fit_dist_diag_cov)
 fit_glasso = fit_dist_to_state(fit_dist_glasso)
-dist_log_pdf = log_pdf_dist_to_state (logpdf!)
+dist_log_pdf = log_pdf_dist_to_state(logpdf!)
 
 function safe_mv_normal(mu :: Array{Float64},
                         cov :: Array{Float64, 2},

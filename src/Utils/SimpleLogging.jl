@@ -3,13 +3,13 @@ module SimpleLogging
 using Compat
 export logstr, logstrln
 
-@compat function logstrln(message :: String,
+@compat function logstrln(message :: AbstractString,
                   indent :: Union{Type{Void}, Integer} = 0,
                   show_time = true)
     logstr(string(message, "\n"), indent, show_time)
 end
 
-@compat function logstr(message :: String,
+@compat function logstr(message :: AbstractString,
                 indent :: Union{Type{Void}, Integer} = 0,
                 show_time = true)
     if indent == Void

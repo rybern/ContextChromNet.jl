@@ -14,7 +14,7 @@ function optimal_label_permutation_(labels1, labels2, k)
     # greedy matching. maybe optimal? probably close.
     permutation = Array(Int, k)
 
-    sorted_by_abundance = sort([1:k], by = l -> sum(labels1 .== l), rev = true)
+    sorted_by_abundance = sort(collect(1:k), by = l -> sum(labels1 .== l), rev = true)
 
     possible_matches = collect(1:k)
     for l = sorted_by_abundance
@@ -56,7 +56,7 @@ function optimal_label_permutation(labels1, labels2, k)
     max_perm
 end
 
-function apply_permutation (old_to_new, estimate, model)
+function apply_permutation(old_to_new, estimate, model)
     (p, n) = size(estimate.gamma)
     k = size(model.trans, 1)
     new_to_old = [findfirst(old_to_new, i) for i = 1:k]

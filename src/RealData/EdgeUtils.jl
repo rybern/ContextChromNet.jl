@@ -36,7 +36,7 @@ function ix_to_exp_pair(header, ix)
     (header[ix[1]], header[ix[2]])
 end
 
-function weighted_ixs_to_weighted_exp_pairs (weighted_ixs,
+function weighted_ixs_to_weighted_exp_pairs(weighted_ixs,
                                              header)
     [(ix_to_exp_pair(header, wixs[1]), wixs[2])
      for wixs = weighted_ixs]
@@ -105,14 +105,14 @@ function network_enrichment(network,
                                                      "P0C0S5",
                                                      "P62805",
                                                      "P84243"]))
-    weighted_edges = experiment_network_factor_edges (network, header, mapping, target_blacklist)
+    weighted_edges = experiment_network_factor_edges(network, header, mapping, target_blacklist)
     edge_enrichment(weighted_edges,
                     pairs)
 end
 
 @compat function edge_enrichment{S}(weighted_edges :: Array{Tuple{S, Float64}, 1},
                           pairs = load_pairs())
-    edge_enrichment ([edge[1] for edge = weighted_edges],
+    edge_enrichment([edge[1] for edge = weighted_edges],
                      pairs)
 end
 
@@ -120,7 +120,7 @@ function edge_enrichment{S}(edges :: Array{S, 1},
                           pairs = load_pairs())
     edge_truth = Bool[edge in pairs
                       for edge in edges]
-    enrichment (edge_truth)
+    enrichment(edge_truth)
 end
 
 
@@ -132,7 +132,7 @@ function network_factor_density(network,
                                                          "P62805",
                                                          "P84243"]);
                                  eps = 1e-8)
-    weighted_edges = experiment_network_factor_edges (network,
+    weighted_edges = experiment_network_factor_edges(network,
                                                       header,
                                                       mapping,
                                                       target_blacklist)
@@ -144,8 +144,8 @@ function network_factor_density(network,
 end
 
 function network_enrichment_overlap(n1, n2, num = 558)
-    es1 = experiment_network_factor_edges (n1)
-    es2 = experiment_network_factor_edges (n2)
+    es1 = experiment_network_factor_edges(n1)
+    es2 = experiment_network_factor_edges(n2)
 
     edges_enrichment_overlap(es1, es2, num)
 end
@@ -170,7 +170,7 @@ end
 end
 
 #can only take two at the moment
-function max_by_position (ls)
+function max_by_position(ls)
     l1 = ls[1]
     l2 = ls[2]
 

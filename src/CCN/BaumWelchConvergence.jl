@@ -32,7 +32,7 @@ function delta_convergence(max_gamma_delta,
 end
 
 function iteration_convergence(halting_iteration)
-    function converged (oldGamma, oldStates, oldLL,
+    function converged(oldGamma, oldStates, oldLL,
                         newGamma, newStates, newLL,
                         iteration)
         iteration > halting_iteration
@@ -40,7 +40,7 @@ function iteration_convergence(halting_iteration)
 end
 
 function ll_convergence(max_percent_change)
-    function converged (oldGamma, oldStates, oldLL,
+    function converged(oldGamma, oldStates, oldLL,
                         newGamma, newStates, newLL,
                         iteration)
         percent_changed = abs((newLL - oldLL) / oldLL)

@@ -1,0 +1,68 @@
+baum_welch
+BaumWelch.baum_welch
+baum_welch
+SyntheticValidation.toy()
+test()
+SyntheticValidation.test()
+methods(SyntheticValidation.evaluation_measures)
+methods(SyntheticValidation.evaluate_measures)
+methods(SyntheticValidation.evaluate_measures)
+SyntheticValidation.toy()
+SyntheticValidation.toy()
+SyntheticValidation.toy()
+SyntheticValidation.toy()
+SyntheticValidation.toy2()
+methods(start)
+start(Nothing)
+(a, b, c) = (1, 2, 3)
+a
+(a, b, c) = Nothing
+(a, b, c) = Nothing(2, 3)
+nothing
+Type{nothing}
+SyntheticValidation.toy2()
+SyntheticValidation.toy2()
+length((1,2,3))
+SyntheticValidation.toy2()
+Nothing == Nothing
+length(Nothing)
+length(nothing)
+SyntheticValidation.toy2()
+SyntheticValidation.toy2()
+SyntheticValidation.toy2()
+function f(x, y)
+x+y
+end
+f(2, 3)
+(a, b) -> f(a, b)
+g = (a, b) -> f(a, b)
+g(4, 5)
+SyntheticValidation.toy2()
+SyntheticValidation.toy2()
+SyntheticValidation.toy2()
+SyntheticValidation.toy2()
+SyntheticValidation.toy2()
+@test 0 == 0
+@test 0 == 1
+SyntheticValidation.toy2()
+res = ans
+lenght(res)
+length(res)
+length(res[1]0
+)
+length(res[1])
+SyntheticValidation.toy()
+res = SyntheticValidation.toy3()
+exit
+exit()
+cd(".."
+)
+pwd()
+)
+cd("..")
+pwd()
+SyntheticValidation.toy3()
+Void
+type(Void)
+Void
+type{None}
