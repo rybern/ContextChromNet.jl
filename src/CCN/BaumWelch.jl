@@ -25,7 +25,7 @@ function baum_welch(num_runs :: Integer,
                             verbose = Void, # :: Union{Type{Void}, Integer} = 0,
                             result_writer = Void, # :: Union{Type{Void}, Function} = Void,
                             kwargs...)
-    println("Running baum welch")
+    logstrln("Running Baum-Welch", verbose)
     flush(STDOUT)
     function run(i)
         if verbose != Void

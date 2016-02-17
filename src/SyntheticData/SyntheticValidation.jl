@@ -46,61 +46,73 @@ function toy3()
                          model_verbose = false)
 end
 
+function toy4()
+    run_synth_validation(n = 1000, p = 5)#, emission_dists = [("True model", Void)])
+end
+
+# Bloated function
+# Translate lists of interesting parameters to lists of generators/models/measures
+# Also supports file output
 function run_synth_validation(output_file = Void;
                               n = 100000,
                               p = 30,
                               k = 5,
-                              emission_dists = [Void,
-                                                  fit_diag_cov,
-                                                  fit_glasso,
-                                                  fit_full_cov],
-                              validations = [hard_label_accuracy_measure,
-                                             hard_network_edge_accuracy_measure,
-                                             test_loglikelihood_measure,
-                                             train_loglikelihood_measure,
-                                             network_enrichment_measure],
+                              emission_dists = [("True model", Void),
+                                                ("Diagonal Covariance BW", fit_diag_cov),
+                                                ("GLASSO BW", fit_glasso),
+                                                ("Full Covariance BW", fit_full_cov)],
+                              validations = [("Label Accuracy", hard_label_accuracy_measure),
+                                             ("Edge Accuracy",hard_network_edge_accuracy_measure),
+                                             ("Test Loglikelihood", test_loglikelihood_measure),
+                                             ("Train Loglikelihood", train_loglikelihood_measure),
+                                             ("Network Enrichment", network_enrichment_measure)],
                               sparsities = [0,
                                             0.5,
                                             0.7,
                                             0.8,
                                             0.9],
-                              repeat = 10,
-                              eval_verbose = true,
-                              model_verbose = false)
-    verbose = eval_verbose ? 0 : Void
+                              iterations = 10,
+                              eval_verbose_flag = true,
+                              model_verbose_flag = false)
+    eval_verbose = eval_verbose_flag ? 0 : Void
+    model_verbose = model_verbose_flag ? 0 : Void
 
-    logstrln("Starting evaluation", verbose)
+    logstrln("Starting evaluation", eval_verbose)
 
     # Check to make sure the file is writable - fail early!
     if output_file != Void
         open(identity, output_file, "w")
     end
 
-    models = [emission_dist == Void ? Void :
-              (data, k) -> baum_welch(5, data, k, emission_dist, verbose)
-              for emission_dist = emission_dists]
+    # Build models from various emission distributions
+    models = [(emission_label,
+               emission_dist == Void ? Void :
+               (data, k) -> baum_welch(5, data, k, emission_dist, verbose = model_verbose))
+              for (emission_label, emission_dist) = emission_dists]
 
-    logstrln("Pregenerating models", verbose)
-
+    # Build data generators from various sparsities
+    logstrln("Pregenerating models", eval_verbose)
     data_models = [rand_HMM_model(p, k, sparsity = sparsity)
                    for sparsity = sparsities]
-    data_generators = [(n -> rand_HMM_data(n, p, data_model))
-                       for data_model = data_models]
+    data_generators = Tuple{ASCIIString, Function}[("Generating density $(round(1-sparsity, 1))",
+                                                    n -> rand_HMM_data(n, p, rand_HMM_model(p, k, sparsity = sparsity)))
+                                                   for sparsity = sparsities]
 
+    # Run all of the evaluations
     results = evaluate_measures(validations,
                                 models,
                                 data_generators,
                                 n,
                                 n,
-                                repeat = repeat,
-                                verbose = verbose)
+                                iterations = iterations,
+                                verbose = eval_verbose)
 
-
+    # Dump the results
     if output_file != Void
         open(s -> serialize(s, results), output_file, "w")
     end
 
-    logstrln("Complete", verbose)
+    logstrln("Complete", eval_verbose)
 
     results
 end
@@ -118,8 +130,7 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
                            data_generators :: Array{Tuple{ASCIIString, Function}} = [("Random_HMM_p6k3", num -> rand_HMM_data(num, 6, 3))],
                            args...;
                            iterations :: Int64 = 1,
-                           verbose = Void,
-                           kwargs...)
+                           verbose = Void)
     # Indicate the index order for the result tensor
     variable_labels  = ("model_optimizer",  "data_generator",  "validation_measure",   "iteration")
     variable_indices = ( model_optimizers,   data_generators,   validation_measures,  1:iterations)
@@ -138,17 +149,16 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
 
     # Evaluate the measures with each combination of variable
     for (model_ix, (model_tick, model_fn)) = enumerate(model_optimizers)
-        logstrln("Model optimizer $model_ix/$(length(model_optimizers))", verbose)
+        logstrln("Model optimizer $model_ix/$(length(model_optimizers)) \"$model_tick\"", verbose)
         for (gen_ix, (gen_tick, gen_fn)) = enumerate(data_generators)
-            logstrln("Generator $gen_ix/$(length(data_generators))", verbose)
+            logstrln("Generator $gen_ix/$(length(data_generators)) \"$gen_tick\"", verbose)
             for iter_ix = 1:iterations
-                logstrln("\tIteration $iter_ix/$iterations", verbose)
+                #logstrln("\tIteration $iter_ix/$iterations", verbose)
 
                 measure_results = evaluate_measure(joint_measure,
                                                    model_fn,
                                                    gen_fn,
-                                                   args...;
-                                                   kwargs...)
+                                                   args...)
 
                 for val_ix = 1:length(validation_measures)
                     result_tensor[model_ix, gen_ix, val_ix, iter_ix] = measure_results[val_ix]
@@ -168,7 +178,7 @@ function evaluate_measure(# See ValidationMeasures.jl
                           #(data, k) -> (estimate, model, log-likelihood)
                           model_optimizer :: Union{Type{Void},Function},
                           # n -> (data, labels, model)
-                          data_generator :: Function = num -> rand_HMM_data(num, 6, 3);
+                          data_generator :: Function = num -> rand_HMM_data(num, 6, 3),
                           train_n = 10000,
                           holdout_n = 10000)
     # Initialize data

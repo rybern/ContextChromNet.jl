@@ -20,9 +20,9 @@ function join_measures(measures)
 end
 
 function hard_label_accuracy_measure(data_train, labels_train,
-                                      data_holdout, labels_holdout,
-                                      true_model,
-                                      found_estimate, found_model, found_ll)
+                                     data_holdout, labels_holdout,
+                                     true_model,
+                                     found_estimate, found_model, found_ll)
     hard_label_accuracy(found_estimate.gamma, labels_train)
 end
 
@@ -71,6 +71,10 @@ function network_enrichment_measure(data_train, labels_train,
 end
 
 function network_enrichment(found_network, true_network; eps = 1e-8)
+    if found_network == Void
+        return 0
+    end
+
     true_edges = Set(sorted_edges(true_network, eps = eps, filter_small = true))
     num_true_edges = length(true_edges)
 
@@ -94,6 +98,10 @@ function hard_label_accuracy(gamma, true_labels)
 end
 
 function hard_network_edge_accuracy(found_mat, true_mat, eps = 1e-8)
+    if found_mat == Void
+        return 0
+    end
+
     found_network = abs(found_mat) .> eps
     true_network = abs(true_mat) .> eps
     accuracy(found_network, true_network)
