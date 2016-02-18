@@ -1,5 +1,5 @@
 module SyntheticValidation
-export evaluate_measures, run_synth_validation
+export evaluate_measures, synth_validation
 
 using HMMTypes
 using ValidationMeasures
@@ -11,6 +11,32 @@ using BaumWelchUtils
 using SimpleLogging
 using Compat
 
+using ArgParse
+
+emission_dist_table = Dict("true" => ("True model", Void),
+                           "diagonal" => ("Diagonal Covariance BW", fit_diag_cov),
+                           "glasso" => ("GLASSO BW", fit_glasso),
+                           "full" => ("Full Covariance BW", fit_full_cov))
+validation_measure_table = Dict("label_accuracy" => ("Label Accuracy", hard_label_accuracy_measure),
+                                "edge_accuracy" => ("Edge Accuracy",hard_network_edge_accuracy_measure),
+                                "test_ll" => ("Test Log-Likelihood", test_loglikelihood_measure),
+                                "edge_enrichment" => ("Network Enrichment", network_enrichment_measure))
+
+default_output_file = Void
+default_n = 10000
+default_p = 10
+default_k = 5
+default_emission_dist_ids = ["true", "diagonal", "glasso", "full"]
+default_emission_dists = [emission_dist_table[id]
+                          for id = default_emission_dist_ids]
+default_validation_measure_ids = ["label_accuracy", "edge_accuracy", "test_ll", "edge_enrichment"]
+default_validation_measures = [validation_measure_table[id]
+                               for id = default_validation_measure_ids]
+default_densities = [1.0,0.8,0.6,0.4,0.3,0.2,0.1]
+default_iterations = 10
+default_test_verbose = true
+default_model_verbose = false
+
 function toy()
     model = [("Default BaumWelch", baum_welch)]
     val = [("Network Enrichment", network_enrichment_measure),
@@ -19,65 +45,26 @@ function toy()
 end
 
 function toy2()
-    run_synth_validation(emission_fitters = [fit_diag_cov, fit_full_cov],
-                         validations = [hard_label_accuracy_measure,
-                                        hard_network_edge_accuracy_measure,
-                                        test_loglikelihood_measure,
-                                        train_loglikelihood_measure,
-                                        network_enrichment_measure],
-                         sparsities = [.5],
-                         n = 1000,
-                         p = 30,
-                         repeat = Void,
-                         model_verbose = false,
-                         eval_verbose = true)
-end
-
-function toy3()
-    run_synth_validation("saved_outputs/synthetic:gen-model-measure-iter.dump",
-                         emission_fitters = [fit_full_cov, Void],
-                         validations = [hard_label_accuracy_measure,
-                                        hard_network_edge_accuracy_measure,
-                                        test_loglikelihood_measure,
-                                        train_loglikelihood_measure,
-                                        network_enrichment_measure],
-                         sparsities = [0],
-                         repeat = 1,
-                         model_verbose = false)
-end
-
-function toy4()
-    run_synth_validation(n = 1000, p = 5)#, emission_dists = [("True model", Void)])
+    synth_validation(n = 1000, p = 5)#, emission_dists = [("True model", Void)])
 end
 
 # Bloated function
 # Translate lists of interesting parameters to lists of generators/models/measures
 # Also supports file output
-function run_synth_validation(output_file = Void;
-                              n = 100000,
-                              p = 30,
-                              k = 5,
-                              emission_dists = [("True model", Void),
-                                                ("Diagonal Covariance BW", fit_diag_cov),
-                                                ("GLASSO BW", fit_glasso),
-                                                ("Full Covariance BW", fit_full_cov)],
-                              validations = [("Label Accuracy", hard_label_accuracy_measure),
-                                             ("Edge Accuracy",hard_network_edge_accuracy_measure),
-                                             ("Test Loglikelihood", test_loglikelihood_measure),
-                                             ("Train Loglikelihood", train_loglikelihood_measure),
-                                             ("Network Enrichment", network_enrichment_measure)],
-                              sparsities = [0,
-                                            0.5,
-                                            0.7,
-                                            0.8,
-                                            0.9],
-                              iterations = 10,
-                              eval_verbose_flag = true,
-                              model_verbose_flag = false)
-    eval_verbose = eval_verbose_flag ? 0 : Void
+function synth_validation(output_file :: AbstractString = default_output_file;
+                              n :: Int = default_n,
+                              p :: Int = default_p,
+                              k :: Int = default_k,
+                              emission_dists = default_emission_dists,
+                              validation_measures :: Array{Tuple{ASCIIString, Function}} = default_validation_measures,
+                              densities :: Array{Float64} = default_densities,
+                              iterations :: Int = default_iterations,
+                              test_verbose_flag :: Bool = default_test_verbose,
+                              model_verbose_flag :: Bool = default_model_verbose)
+    test_verbose = test_verbose_flag ? 0 : Void
     model_verbose = model_verbose_flag ? 0 : Void
 
-    logstrln("Starting evaluation", eval_verbose)
+    logstrln("Starting evaluation", test_verbose)
 
     # Check to make sure the file is writable - fail early!
     if output_file != Void
@@ -91,7 +78,9 @@ function run_synth_validation(output_file = Void;
               for (emission_label, emission_dist) = emission_dists]
 
     # Build data generators from various sparsities
-    logstrln("Pregenerating models", eval_verbose)
+    logstrln("Pregenerating models", test_verbose)
+
+    sparsities = 1 - densities
     data_models = [rand_HMM_model(p, k, sparsity = sparsity)
                    for sparsity = sparsities]
     data_generators = Tuple{ASCIIString, Function}[("Generating density $(round(1-sparsity, 1))",
@@ -99,20 +88,20 @@ function run_synth_validation(output_file = Void;
                                                    for sparsity = sparsities]
 
     # Run all of the evaluations
-    results = evaluate_measures(validations,
+    results = evaluate_measures(validation_measures,
                                 models,
                                 data_generators,
                                 n,
                                 n,
                                 iterations = iterations,
-                                verbose = eval_verbose)
+                                verbose = test_verbose)
 
     # Dump the results
     if output_file != Void
         open(s -> serialize(s, results), output_file, "w")
     end
 
-    logstrln("Complete", eval_verbose)
+    logstrln("Complete", test_verbose)
 
     results
 end
@@ -212,6 +201,86 @@ function evaluate_measure(# See ValidationMeasures.jl
                        data_holdout, labels_holdout,
                        true_model,
                        found_estimate, found_model, found_ll)
+end
+
+
+function parse_commandline()
+    s = ArgParseSettings()
+
+    @add_arg_table s begin
+        "--output-file", "-o"
+            help = "The relative or full path to a Julia serial dump file."
+            required = true
+        "--num-observations", "-n"
+            help = "Length of the training and test synthetic datasets"
+            arg_type = Int
+            default = default_n
+        "--num-tracks", "-p"
+            help = "Number of tracks in the synthetic datasets"
+            arg_type = Int
+            default = default_p
+        "--num-states", "-k"
+            help = "Number of states in the true and fit models"
+            arg_type = Int
+            default = default_k
+        "--iterations", "-i"
+            help = "Number of tracks in the synthetic datasets"
+            arg_type = Int
+            default = default_iterations
+        "--emission-dists"
+            help = "List (comma separated, no spaces) the emission distributions to optimize models with.
+Possibilities are: \"true\" (true model), \"diagonal\" (diagonal covariance matrix), \"glasso\" (graphical LASSO), \"full\" (unconstrained, full covariance matrix)"
+
+            default = join(default_emission_dist_ids, ",")
+        "--validation-measures"
+            help = "List (comma separated, no spaces) the validation measures to test models with. Possibilities: \"label_accuracy\" (hard label accuracy), \"edge_accuracy\" (hard edge accuracy), \"test_ll\" (test log-likelihood), \"edge_enrichment\" (network edge enrichment)"
+            default = join(default_validation_measure_ids, ",")
+        "--densities"
+            help = "List (comma separated, no spaces) the off-diagonal inverse covariance matrix densities at which to generate the synthetic data.\n"
+            default = join(default_densities, ",")
+        "--test-verbose"
+            help = "Output testing progress to stdout"
+            action = :store_true
+        "--model-verbose"
+            help = "Output Baum Welch optimization progress to stdout"
+            action = :store_true
+    end
+
+    return parse_args(s)
+end
+
+function synth_eval_from_cli()
+    args = parse_commandline()
+
+    output_file = args["output-file"]
+    n = args["num-observations"]
+    p = args["num-tracks"]
+    k = args["num-states"]
+    model_verbose = args["model-verbose"]
+    test_verbose = args["test-verbose"]
+    iterations = args["iterations"]
+    emission_dist_ids = split(args["emission-dists"], ",")
+    emission_dists = [emission_dist_table[id]
+                      for id = emission_dist_ids]
+    validation_measure_ids = split(args["validation-measures"], ",")
+    validation_measures = Tuple{ASCIIString,Function}[validation_measure_table[id]
+                                                      for id = validation_measure_ids]
+    densities = map(float, split(args["densities"], ","))
+
+    synth_validation(output_file,
+                         n = n,
+                         p = p,
+                         k = k,
+                         emission_dists = emission_dists,
+                         validation_measures = validation_measures,
+                         densities = densities,
+                         iterations = iterations,
+                         test_verbose_flag = test_verbose,
+                         model_verbose_flag = model_verbose)
+end
+
+if !isinteractive()
+    synth_eval_from_cli()
 end
 
 end
