@@ -51,7 +51,10 @@ function gamma_to_labels(gamma :: Array{Float64, 2})
 end
 
 function model_to_networks(model :: HMMStateModel)
-    [inv(cholfact(cov(state.dist))) for state = model.states]
+    [state.active ?
+     inv(cholfact(cov(state.dist))) :
+     Void
+     for state = model.states]
 end
 
 ## Transpose ##
