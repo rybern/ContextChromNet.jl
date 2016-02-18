@@ -37,6 +37,14 @@ default_iterations = 10
 default_test_verbose = true
 default_model_verbose = false
 
+type SynthDataset
+    train_data :: Array{Float64, 2}
+    train_labels :: Array{Int64, 1}
+    test_data :: Array{Float64, 2}
+    test_labels :: Array{Int64, 1}
+    true_model :: HMMStateModel
+end
+
 function toy()
     model = [("Default BaumWelch", baum_welch)]
     val = [("Network Enrichment", network_enrichment_measure),
@@ -52,15 +60,15 @@ end
 # Translate lists of interesting parameters to lists of generators/models/measures
 # Also supports file output
 function synth_validation(output_file :: AbstractString = default_output_file;
-                              n :: Int = default_n,
-                              p :: Int = default_p,
-                              k :: Int = default_k,
-                              emission_dists = default_emission_dists,
-                              validation_measures :: Array{Tuple{ASCIIString, Function}} = default_validation_measures,
-                              densities :: Array{Float64} = default_densities,
-                              iterations :: Int = default_iterations,
-                              test_verbose_flag :: Bool = default_test_verbose,
-                              model_verbose_flag :: Bool = default_model_verbose)
+                          n :: Int = default_n,
+                          p :: Int = default_p,
+                          k :: Int = default_k,
+                          emission_dists = default_emission_dists,
+                          validation_measures :: Array{Tuple{ASCIIString, Function}} = default_validation_measures,
+                          densities :: Array{Float64} = default_densities,
+                          iterations :: Int = default_iterations,
+                          test_verbose_flag :: Bool = default_test_verbose,
+                          model_verbose_flag :: Bool = default_model_verbose)
     test_verbose = test_verbose_flag ? 0 : Void
     model_verbose = model_verbose_flag ? 0 : Void
 
@@ -78,11 +86,7 @@ function synth_validation(output_file :: AbstractString = default_output_file;
               for (emission_label, emission_dist) = emission_dists]
 
     # Build data generators from various sparsities
-    logstrln("Pregenerating models", test_verbose)
-
     sparsities = 1 - densities
-    data_models = [rand_HMM_model(p, k, sparsity = sparsity)
-                   for sparsity = sparsities]
     data_generators = Tuple{ASCIIString, Function}[("Generating density $(round(1-sparsity, 1))",
                                                     n -> rand_HMM_data(n, p, rand_HMM_model(p, k, sparsity = sparsity)))
                                                    for sparsity = sparsities]
@@ -117,7 +121,8 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
                            # Immature language, have to give up on type system sometimes :(
                            model_optimizers, #:: Array{Tuple{ASCIIString,Union{Type{Void}, Function}}}
                            data_generators :: Array{Tuple{ASCIIString, Function}} = [("Random_HMM_p6k3", num -> rand_HMM_data(num, 6, 3))],
-                           args...;
+                           train_n = 10000,
+                           holdout_n = 10000;
                            iterations :: Int64 = 1,
                            verbose = Void)
     # Indicate the index order for the result tensor
@@ -137,17 +142,28 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
     joint_measure = join_measures([measure for (name, measure) = validation_measures])
 
     # Evaluate the measures with each combination of variable
-    for (model_ix, (model_tick, model_fn)) = enumerate(model_optimizers)
-        logstrln("Model optimizer $model_ix/$(length(model_optimizers)) \"$model_tick\"", verbose)
-        for (gen_ix, (gen_tick, gen_fn)) = enumerate(data_generators)
-            logstrln("Generator $gen_ix/$(length(data_generators)) \"$gen_tick\"", verbose)
-            for iter_ix = 1:iterations
-                #logstrln("\tIteration $iter_ix/$iterations", verbose)
+    for (gen_ix, (gen_tick, gen_fn)) = enumerate(data_generators)
+        logstrln("Generator $gen_ix/$(length(data_generators)) \"$gen_tick\"", verbose)
+        for iter_ix = 1:iterations
+            logstrln("Iteration $iter_ix/$iterations", verbose)
+            # build a SynthDatabase with gen_fn
+            all_data, all_labels, true_model = gen_fn(train_n + holdout_n)
+            train_data = all_data[:, 1:train_n]
+            test_data = all_data[:, train_n+1:end]
+            train_labels = all_labels[1:train_n]
+            test_labels = all_labels[train_n+1:end]
+            dataset = SynthDataset(train_data,
+                                   train_labels,
+                                   test_data,
+                                   test_labels,
+                                   true_model)
+
+            for (model_ix, (model_tick, model_fn)) = enumerate(model_optimizers)
+                logstrln("Model optimizer $model_ix/$(length(model_optimizers)) \"$model_tick\"", verbose)
 
                 measure_results = evaluate_measure(joint_measure,
                                                    model_fn,
-                                                   gen_fn,
-                                                   args...)
+                                                   dataset)
 
                 for val_ix = 1:length(validation_measures)
                     result_tensor[model_ix, gen_ix, val_ix, iter_ix] = measure_results[val_ix]
@@ -166,40 +182,31 @@ function evaluate_measure(# See ValidationMeasures.jl
                           validation_measure :: Function,
                           #(data, k) -> (estimate, model, log-likelihood)
                           model_optimizer :: Union{Type{Void},Function},
-                          # n -> (data, labels, model)
-                          data_generator :: Function = num -> rand_HMM_data(num, 6, 3),
-                          train_n = 10000,
-                          holdout_n = 10000)
+                          dataset :: SynthDataset)
     # Initialize data
-    data_all, labels_all, true_model = data_generator(train_n + holdout_n)
-    data_train = data_all[:, 1:train_n]
-    data_holdout = data_all[:, train_n+1:end]
-    labels_train = labels_all[1:train_n]
-    labels_holdout = labels_all[train_n+1:end]
-
-    k = size(true_model.trans, 1)
+    k = size(dataset.true_model.trans, 1)
 
     # Build model
     if model_optimizer != Void
         # Run optimizer
         (found_estimate_unordered, found_model_unordered, found_ll) =
-            model_optimizer(data_train, k)
+            model_optimizer(dataset.train_data, k)
 
         (found_estimate, found_model) = match_states(found_estimate_unordered,
                                                      found_model_unordered,
-                                                     labels_train,
-                                                     true_model)
+                                                     dataset.train_labels,
+                                                     dataset.true_model)
     else
         # If no optimizer provided, use the truth model
-        found_estimate = HMMEstimate(labels_to_gamma(labels_train, k))
-        found_model = true_model
-        found_ll = log_likelihood(data_train, k, true_model, dist_log_pdf)
+        found_estimate = HMMEstimate(labels_to_gamma(dataset.train_labels, k))
+        found_model = dataset.true_model
+        found_ll = log_likelihood(dataset.train_data, k, dataset.true_model, dist_log_pdf)
     end
 
     # Measure the quality of the model
-    validation_measure(data_train, labels_train,
-                       data_holdout, labels_holdout,
-                       true_model,
+    validation_measure(dataset.train_data, dataset.train_labels,
+                       dataset.test_data, dataset.test_labels,
+                       dataset.true_model,
                        found_estimate, found_model, found_ll)
 end
 
@@ -268,15 +275,15 @@ function synth_eval_from_cli()
     densities = map(float, split(args["densities"], ","))
 
     synth_validation(output_file,
-                         n = n,
-                         p = p,
-                         k = k,
-                         emission_dists = emission_dists,
-                         validation_measures = validation_measures,
-                         densities = densities,
-                         iterations = iterations,
-                         test_verbose_flag = test_verbose,
-                         model_verbose_flag = model_verbose)
+                     n = n,
+                     p = p,
+                     k = k,
+                     emission_dists = emission_dists,
+                     validation_measures = validation_measures,
+                     densities = densities,
+                     iterations = iterations,
+                     test_verbose_flag = test_verbose,
+                     model_verbose_flag = model_verbose)
 end
 
 if !isinteractive()
