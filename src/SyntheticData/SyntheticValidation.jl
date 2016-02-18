@@ -142,7 +142,7 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
     joint_measure = join_measures([measure for (name, measure) = validation_measures])
 
     # Seed consistently so that results are reproducible (assuming the same data generating settings)
-    srand(1)
+    srand(2)
 
     # Evaluate the measures with each combination of variable
     for (gen_ix, (gen_tick, gen_fn)) = enumerate(data_generators)
