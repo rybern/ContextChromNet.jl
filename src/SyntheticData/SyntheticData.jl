@@ -104,7 +104,22 @@ function randInvcov(p)
     inv(cholfact(T' * T / p))
 end
 
-function rand_cov(p, sparsity)
+# From Scott. Thanks Scott!
+function rand_cov(K, netDensity)
+    IC = diagm(abs(randn(K)))
+    for i in 1:K, j in 1:i-1
+        IC[i,j] = rand() < netDensity ? rand()-1.01 : 0.0
+        IC[j,i] = IC[i,j]
+    end
+    mineval = minimum(eig(IC)[1])
+    if mineval < 0
+        IC -= eye(K)*mineval*1.01
+    end
+    C = inv(IC)
+    Base.cov2cor!(C, sqrt(diag(C)))
+end
+
+function rand_cov_(p, sparsity)
     # generate 30 psd matricies with aprox. correct sparsities
     aprox_invcovs = [aprox_sparse_psd_matrix(p, sparsity) for i = 1:30]
 

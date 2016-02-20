@@ -22,12 +22,17 @@ measure_names = ["Label accuracy",
                  "Test Log-Likelihood",
                  "Network enrichment fold"]
 
-measure_perm = [1:5]
-model_perm = [2, 3, 4, 1]
-gen_perm = reverse([1:5])
+measure_perm = [1:4]
+model_perm = [1:3]
+gen_perm = [1:6]
 
-function run_standard_figures(results_file = "saved_outputs/synthetic:n100k-k30-v3.dump")
-    results = open(deserialize, results_file)
+function run_standard_figures(results_file = "saved_outputs/synth-full-2-11-16.dump")
+    # results = open(deserialize, results_file)
+    (vars, ticks, results) = open(deserialize, results_file)
+
+    model_names = ticks[1]
+    measure_names = ticks[3]
+    gen_names = map(a -> a[length(a)-2:length(a)], ticks[2])
 
     label_acc = true
     network_acc = false
@@ -39,7 +44,10 @@ function run_standard_figures(results_file = "saved_outputs/synthetic:n100k-k30-
         measure_figure_(results, 1, "Label Accuracy versus Model Density", Void,
                         y_limits = true,
                         save_file = "results/label-acc.png",
-                        model_ixs = model_perm[1:3])
+                        model_ixs = model_perm[1:3],
+                        model_names = model_names,
+                        measure_names = measure_names,
+                        gen_names = gen_names)
         pairs = measure_pair_test(results, 1)
         println("Pair tests:")
         map(println, pairs);
@@ -52,7 +60,10 @@ function run_standard_figures(results_file = "saved_outputs/synthetic:n100k-k30-
                        "Average network accuracy versus Model Density",
                        Void,
                        preprocess = mean,
-                       save_file = "results/network_acc.png")
+                       save_file = "results/network_acc.png",
+                       model_names = model_names,
+                       measure_names = measure_names,
+                       gen_names = gen_names)
     end
 
     # loglikelihood
@@ -60,18 +71,23 @@ function run_standard_figures(results_file = "saved_outputs/synthetic:n100k-k30-
         measure_figure_(results, 3, "Negative Test Log-Likelihood versus Model Density", Void,
                         preprocess = (x -> -(x / 100000)),
                         save_file = "results/neg-test-loglike.png",
-                        y_limits = true)
+                        y_limits = true,
+                        model_names = model_names,
+                        measure_names = measure_names,
+                        gen_names = gen_names)
     end
 
     # network enrich
     if network_enrich
         measure_figure_(results,
-                        5,
+                        4,
                         "Average network enrichment fold versus Model Density",
                         Void,
                         preprocess = mean,
                         save_file = "results/net-enrichment.png",
-                        model_ixs = [3, 4, 1])
+                        model_names = model_names,
+                        measure_names = measure_names,
+                        gen_names = gen_names)
     end
 end
 
@@ -98,7 +114,13 @@ function measure_figure_(results,
                          gen_ixs = gen_perm,
                          preprocess = identity,
                          save_file = Void,
-                         y_limits = false)
+                         y_limits = false,
+                         model_names = model_names,
+    measure_names = measure_names,
+    gen_names = gen_names)
+
+    println(model_names, measure_names, gen_names)
+    println(size(results))
 
     means, stds = measure_moments(results,
                                   measure_ix,
@@ -206,11 +228,21 @@ function split_result_measures (res)
      for measure_ix = 1:measure_len]
 end
 
+# for new result format
+function split_result_measures_ (res)
+    (n_models, n_gens, n_measures, n_iters) = size(res)
+
+    [[[vec(res[model_ix, gen_ix, measure_ix, :])
+       for model_ix = 1:n_models]
+      for gen_ix = 1:n_gens]
+     for measure_ix = 1:n_measures]
+end
+
 function measure_moments (results,
                           measure_index,
                           relative = Void;
                           preprocess = identity)
-    res = split_result_measures(results)[measure_index]
+    res = split_result_measures_(results)[measure_index]
     gen_len = length(res)
     model_len = length(res[1])
 
