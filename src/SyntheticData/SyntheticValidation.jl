@@ -37,6 +37,8 @@ default_iterations = 10
 default_test_verbose = true
 default_model_verbose = false
 
+#TODO : add run parameters (other than ticks) to the dump file
+
 type SynthDataset
     train_data :: Array{Float64, 2}
     train_labels :: Array{Int64, 1}
@@ -85,20 +87,22 @@ function synth_validation(output_file :: AbstractString = default_output_file;
                (data, k) -> baum_welch(5, data, k, emission_dist, verbose = model_verbose))
               for (emission_label, emission_dist) = emission_dists]
 
-    # Build data generators from various sparsities
-    sparsities = 1 - densities
-    data_generators = Tuple{ASCIIString, Function}[("Generating density $(round(1-sparsity, 1))",
-                                                    n -> rand_HMM_data(n, p, rand_HMM_model(p, k, sparsity = sparsity)))
-                                                   for sparsity = sparsities]
+    data_generators = Tuple{ASCIIString, Function}[("Generating density $(round(density, 1))",
+                                                    n -> rand_HMM_data(n, p,
+                                                                       rand_HMM_model(p,
+                                                                                      k,
+                                                                                      density = density)))
+                                                   for density = densities]
 
-    # Run all of the evaluations
-    results = evaluate_measures(validation_measures,
-                                models,
-                                data_generators,
-                                n,
-                                n,
-                                iterations = iterations,
-                                verbose = test_verbose)
+    (vars, ticks, res) = evaluate_measures(validation_measures,
+                                     models,
+                                     data_generators,
+                                     n,
+                                     n,
+                                     iterations = iterations,
+                                     verbose = test_verbose)
+
+    results = (vars, ticks, res, (n, p, k))
 
     # Dump the results
     if output_file != Void

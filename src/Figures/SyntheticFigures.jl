@@ -6,6 +6,7 @@ using PyPlot.(figure)
 using PyPlot.(savefig)
 using SimplePlot
 using HypothesisTests
+using ArgParse
 
 gen_names = map(string, [1,
                          0.5,
@@ -26,16 +27,19 @@ measure_perm = [1:4]
 model_perm = [1:3]
 gen_perm = [1:6]
 
-function run_standard_figures(results_file = "saved_outputs/synth-full-2-11-16.dump")
-    # results = open(deserialize, results_file)
-    (vars, ticks, results) = open(deserialize, results_file)
+function run_standard_figures(results_file = "saved_outputs/synth-full-2-11-16.dump",
+                              output_dir = "synthetic_figures")
+    if(!isdir(output_dir))
+        mkdir(output_dir)
+    end
+
+    (vars, ticks, results) = open(deserialize, results_file)[1:3]
 
     model_names = ticks[1]
     measure_names = ticks[3]
     gen_names = map(a -> a[length(a)-2:length(a)], ticks[2])
 
     label_acc = true
-    network_acc = false
     tll = true
     network_enrich = true
 
@@ -43,7 +47,7 @@ function run_standard_figures(results_file = "saved_outputs/synth-full-2-11-16.d
     if label_acc
         measure_figure_(results, 1, "Label Accuracy versus Model Density", Void,
                         y_limits = true,
-                        save_file = "results/label-acc.png",
+                        save_file = "$output_dir/label-acc.png",
                         model_ixs = model_perm[1:3],
                         model_names = model_names,
                         measure_names = measure_names,
@@ -53,38 +57,25 @@ function run_standard_figures(results_file = "saved_outputs/synth-full-2-11-16.d
         map(println, pairs);
     end
 
-    # Network acc
-    if network_acc
-        measure_figure(results,
-                       2,
-                       "Average network accuracy versus Model Density",
-                       Void,
-                       preprocess = mean,
-                       save_file = "results/network_acc.png",
-                       model_names = model_names,
-                       measure_names = measure_names,
-                       gen_names = gen_names)
-    end
-
-    # loglikelihood
+    # log-likelihood
     if tll
         measure_figure_(results, 3, "Negative Test Log-Likelihood versus Model Density", Void,
                         preprocess = (x -> -(x / 100000)),
-                        save_file = "results/neg-test-loglike.png",
+                        save_file = "$output_dir/neg-test-loglike.png",
                         y_limits = true,
                         model_names = model_names,
                         measure_names = measure_names,
                         gen_names = gen_names)
     end
 
-    # network enrich
+    # network enrichment
     if network_enrich
         measure_figure_(results,
                         4,
                         "Average network enrichment fold versus Model Density",
                         Void,
                         preprocess = mean,
-                        save_file = "results/net-enrichment.png",
+                        save_file = "$output_dir/net-enrichment.png",
                         model_names = model_names,
                         measure_names = measure_names,
                         gen_names = gen_names)
@@ -284,6 +275,37 @@ function scale_measure (measure_results,
     end
 
     measure_results
+end
+
+function parse_commandline()
+    s = ArgParseSettings()
+
+    @add_arg_table s begin
+        "--output-dir", "-o"
+            help = "path to directory in which to store the figures"
+            arg_type = ASCIIString
+            required = true
+        "--results-file", "-i"
+            help = "path to the Julia serialized file containing CCN synthetic test results"
+            arg_type = ASCIIString
+            required = true
+    end
+
+    return parse_args(s)
+end
+
+function synth_figures_from_cli()
+    args = parse_commandline()
+
+    output_dir = args["output-dir"]
+    results_file = args["results-file"]
+
+    run_standard_figures(results_file,
+                         output_dir)
+end
+
+if !isinteractive()
+    synth_figures_from_cli()
 end
 
 end

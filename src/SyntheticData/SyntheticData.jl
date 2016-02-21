@@ -9,16 +9,16 @@ using Distributions
 using StatsBase
 using Memoize
 
-
+# TODO: CHANGE SPARSITY TO DENSITY!
 function rand_HMM_model(p :: Integer,
                         k :: Integer;
                         avg_range = .1,
-                        sparsity = .3,
+                        density = .3,
                         dwell_prob = 3/4)
     dists = Array(MvNormal, k)
     for i = 1:k
         mu = rand(p) * avg_range - avg_range/2;
-        cov = rand_cov(p, sparsity)
+        cov = rand_cov(p, density)
 
         dists[i] = MvNormal(mu, cov)
     end
@@ -119,21 +119,21 @@ function rand_cov(K, netDensity)
     Base.cov2cor!(C, sqrt(diag(C)))
 end
 
-function rand_cov_(p, sparsity)
+function rand_cov_(p, density)
     # generate 30 psd matricies with aprox. correct sparsities
-    aprox_invcovs = [aprox_sparse_psd_matrix(p, sparsity) for i = 1:30]
+    aprox_invcovs = [aprox_sparse_psd_matrix(p, density) for i = 1:30]
 
-    # measure closeness to desired sparsity
-    sparsity_errors = map(m -> abs(sparsity - mat_sparsity(m)), aprox_invcovs)
+    # measure closeness to desired density
+    density_errors = map(m -> abs(density - mat_density(m)), aprox_invcovs)
 
     # return inverse of closest
-    closest_invcov = aprox_invcovs[indmin(sparsity_errors)]
+    closest_invcov = aprox_invcovs[indmin(density_errors)]
     B = inv(cholfact(closest_invcov))
     normalize_determinant(B)
 end
 
-# TODO only measure sparsity of off-diags
-function mat_sparsity(m; eps = 10e-6)
+# TODO only measure density of off-diags
+function mat_density(m; eps = 10e-6)
     p = size(m, 1)
     num_zero = length(filter(x -> x < eps, m + eye(p)))
     num_zero / (p*p-p)
@@ -145,10 +145,10 @@ function normalize_determinant(m :: Array{Float64, 2}, to = 1)
 end
 
 
-function aprox_sparse_psd_matrix(p, sparsity)
+function aprox_sparse_psd_matrix(p, density)
     generator = () -> rand(p, p)
-    p_sparsity = 1 - sqrt((1-sparsity) / p)
-    P = sparsify_rand(generator, p_sparsity, X -> rank(X) == p)
+    p_density = 1 - sqrt(density / p)
+    P = sparsify_rand(generator, p_density, X -> rank(X) == p)
     P' * P
 end
 
@@ -157,17 +157,17 @@ function sparsify_rand(generator, sparify, valid)
 
     while result == false
         M = generator()
-        result = sparsify_mat(m, sparsity, valid)
+        result = sparsify_mat(m, density, valid)
     end
 
     result
 end
 
-# TODO only measure sparsity of off-diags
-@memoize function sparsify_mat(m, sparsity, valid)
+# TODO only measure density of off-diags
+@memoize function sparsify_mat(m, density, valid)
     p = size(m, 1)
     s = p * p - p;
-    nzeros = s * sparsity;
+    nzeros = s * density;
 
     for i = 1:nzeros/2
         m = zero_rand_offdiag(m, valid);
@@ -179,16 +179,16 @@ end
     m
 end
 
-function sparsify_rand(generator, sparsity, valid)
+function sparsify_rand(generator, density, valid)
     M = generator()
 
     s = size(M)[1] * size(M)[2];
-    nzeros = s * sparsity;
+    nzeros = s * density;
 
     for i = 1:nzeros/2
         M = zero_rand_offdiag(M, valid);
         if(M == false)
-            return sparsify_rand(generator, sparsity, valid);
+            return sparsify_rand(generator, density, valid);
         end
     end
 
