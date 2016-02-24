@@ -2,7 +2,7 @@
 # emission_pdf :: data -> gamma -> log probability
 
 module EmissionDistributions
-export fit_full_cov, fit_diag_cov, fit_glasso, dist_log_pdf, state_sample
+export fit_full_cov, fit_diag_cov, fit_glasso, dist_log_pdf, state_sample, fit_glasso_old
 
 using HMMTypes
 using GLasso
@@ -130,9 +130,18 @@ function fit_dist_glasso{N <: Number}(data :: AbstractArray{N, 2},
     safe_mv_normal(mu, cov)
 end
 
+function fit_dist_glasso_old{N <: Number}(data :: AbstractArray{N, 2},
+                                      weights)
+    mu, cov_ = mean_and_cov(data, WeightVec(weights), vardim=2)
+    cov = GLasso.glasso_cov_old(data, weights)
+
+    safe_mv_normal(mu, cov)
+end
+
 fit_full_cov = fit_dist_to_state(fit_dist_full_cov)
 fit_diag_cov = fit_dist_to_state(fit_dist_diag_cov)
 fit_glasso = fit_dist_to_state(fit_dist_glasso)
+fit_glasso_old = fit_dist_to_state(fit_dist_glasso_old)
 dist_log_pdf = log_pdf_dist_to_state(logpdf!)
 
 function safe_mv_normal(mu :: Array{Float64},

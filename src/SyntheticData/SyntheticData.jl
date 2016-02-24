@@ -12,12 +12,12 @@ using Memoize
 # TODO: CHANGE SPARSITY TO DENSITY!
 function rand_HMM_model(p :: Integer,
                         k :: Integer;
-                        avg_range = .1,
+                        mean_range = .1,
                         density = .3,
                         dwell_prob = 3/4)
     dists = Array(MvNormal, k)
     for i = 1:k
-        mu = rand(p) * avg_range - avg_range/2;
+        mu = rand(p) * mean_range - mean_range/2;
         cov = rand_cov(p, density)
 
         dists[i] = MvNormal(mu, cov)

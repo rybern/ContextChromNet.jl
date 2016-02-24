@@ -1,6 +1,7 @@
 module SyntheticValidation
 export evaluate_measures, synth_validation
 
+using StatsBase
 using HMMTypes
 using ValidationMeasures
 using StateMatching
@@ -17,10 +18,16 @@ emission_dist_table = Dict("true" => ("True model", Void),
                            "diagonal" => ("Diagonal Covariance BW", fit_diag_cov),
                            "glasso" => ("GLASSO BW", fit_glasso),
                            "full" => ("Full Covariance BW", fit_full_cov))
-validation_measure_table = Dict("label_accuracy" => ("Label Accuracy", hard_label_accuracy_measure),
-                                "edge_accuracy" => ("Edge Accuracy",hard_network_edge_accuracy_measure),
-                                "test_ll" => ("Test Log-Likelihood", test_loglikelihood_measure),
-                                "edge_enrichment" => ("Network Enrichment", network_enrichment_measure))
+validation_measure_table = Dict("label_accuracy" => ("Label Accuracy",
+                                                     hard_label_accuracy_measure),
+                                "edge_accuracy" => ("Edge Accuracy",
+                                                    hard_network_edge_accuracy_measure),
+                                "test_ll" => ("Test Log-Likelihood",
+                                              test_loglikelihood_measure),
+                                "enrichment_fold" => ("Network Enrichment Fold",
+                                                      network_enrichment_fold_measure),
+                                "edge_matches" => ("Network Edge Matches",
+                                                   network_edge_matches_measure))
 
 default_output_file = Void
 default_n = 10000
@@ -29,15 +36,13 @@ default_k = 5
 default_emission_dist_ids = ["true", "diagonal", "glasso", "full"]
 default_emission_dists = [emission_dist_table[id]
                           for id = default_emission_dist_ids]
-default_validation_measure_ids = ["label_accuracy", "edge_accuracy", "test_ll", "edge_enrichment"]
+default_validation_measure_ids = ["label_accuracy", "edge_accuracy", "test_ll", "enrichment_fold", "edge_matches"]
 default_validation_measures = [validation_measure_table[id]
                                for id = default_validation_measure_ids]
 default_densities = [1.0,0.8,0.6,0.4,0.3,0.2,0.1]
 default_iterations = 10
 default_test_verbose = true
 default_model_verbose = false
-
-#TODO : add run parameters (other than ticks) to the dump file
 
 type SynthDataset
     train_data :: Array{Float64, 2}
@@ -217,6 +222,96 @@ function evaluate_measure(# See ValidationMeasures.jl
                        found_estimate, found_model, found_ll)
 end
 
+function best_networks(;
+                       n = 10000,
+                       p = 15,
+                       k = 5,
+                       emission_dist = fit_full_cov,
+                       density = 1.0,
+                       seed = Void)
+    if(seed != Void)
+        srand(seed)
+    end
+
+    true_model = rand_HMM_model(p, k, density = density, mean_range = 0)
+    (data, true_labels) = rand_HMM_data(n, p, true_model)[1:2]
+
+    gamma = labels_to_gamma(true_labels, k)
+    new_states = emission_dist(data, gamma)
+    found_networks = states_to_networks(new_states)
+
+    true_networks = model_to_networks(true_model)
+    enrichments = [ValidationMeasures.network_enrichment(t[1], t[2]) for t = zip(found_networks, true_networks)]
+
+    Dict(:true_model => true_model,
+         :true_labels => true_labels,
+         :true_networks => true_networks,
+         :found_networks => found_networks,
+         :data => data,
+         :enrichments => enrichments)
+end
+
+function compare_best_networks(emission_dists::Tuple{Function,Function};
+                               compare_diff_by = mean,
+                               k = 5,
+                               kwargs...)
+    seed = rand(UInt32)
+    nets = [best_networks(emission_dist = emission_dist, k = k, seed = seed; kwargs...)[:found_networks]
+            for emission_dist = emission_dists]
+    net_pairs = collect(zip(nets[1], nets[2]))
+end
+
+function compare_best_networks_diff(args...;
+                                    compare_diff_by = mean,
+                                    k = 5,
+                                    kwargs...)
+    nets = compare_best_networks(args..., k = k; kwargs...)
+    Float64[compare_diff_by(net2 - net1) for (net1, net2) = nets]
+end
+
+function compare_best_networks_diff_moments(num_repeats,
+                                            args...;
+                                            kwargs...)
+    comparisons = Float64[mean(SyntheticValidation.compare_best_networks_diff(args...; kwargs...))
+                          for i = 1:num_repeats]
+    mean_and_std(comparisons)
+end
+
+function synth_data_model(;
+                          n = 1000,
+                          p = 15,
+                          k = 5,
+                          emission_dist = fit_full_cov,
+                          density = 1.0,
+                          match_states = true,
+                          verbose = false)
+    true_model = rand_HMM_model(p, k, density = density, mean_range = 0)
+    (data, true_labels) = rand_HMM_data(n, p, true_model)[1:2]
+    (unordered_estimate, unordered_model, ll) = baum_welch(data, k, emission_dist,
+                                                           verbose = verbose ? 0 : Void)
+    (estimate, model) = StateMatching.match_states(unordered_estimate,
+                                                   unordered_model,
+                                                   true_labels,
+                                                   true_model)
+
+    true_networks = model_to_networks(true_model)
+    found_networks = model_to_networks(model)
+    enrichments = [ValidationMeasures.network_enrichment(t[1], t[2]) for t = zip(found_networks, true_networks)]
+
+    label_accuracy = hard_label_accuracy(estimate.gamma, true_labels)
+
+    Dict(:true_model => true_model,
+         :true_labels => true_labels,
+         :true_networks => true_networks,
+         :found_networks => found_networks,
+         :found_gamma => estimate.gamma,
+         :found_labels => gamma_to_labels(estimate.gamma),
+         :found_model => model,
+         :found_ll => ll,
+         :data => data,
+         :label_accuracy => label_accuracy,
+         :enrichments => enrichments)
+end
 
 function parse_commandline()
     s = ArgParseSettings()
@@ -247,7 +342,7 @@ Possibilities are: \"true\" (true model), \"diagonal\" (diagonal covariance matr
 
             default = join(default_emission_dist_ids, ",")
         "--validation-measures"
-            help = "List (comma separated, no spaces) the validation measures to test models with. Possibilities: \"label_accuracy\" (hard label accuracy), \"edge_accuracy\" (hard edge accuracy), \"test_ll\" (test log-likelihood), \"edge_enrichment\" (network edge enrichment)"
+            help = "List (comma separated, no spaces) the validation measures to test models with. Possibilities: \"label_accuracy\" (hard label accuracy), \"edge_accuracy\" (hard edge accuracy), \"test_ll\" (test log-likelihood), \"enrichment_fold\" (network edge enrichment), \"edge_matches\" (boolean edge matches sorted by magnitude)"
             default = join(default_validation_measure_ids, ",")
         "--densities"
             help = "List (comma separated, no spaces) the off-diagonal inverse covariance matrix densities at which to generate the synthetic data.\n"

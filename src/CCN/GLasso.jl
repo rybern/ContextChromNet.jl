@@ -8,10 +8,15 @@ using Distributions
 using StatsBase
 using LambdaOptimization
 
-function lambdaUni(p, n)
-    sqrt(2 * n * log(p)) / 2
+using GraphLasso
+
+function glasso(cov, alpha)
+    tol = 1e-4
+    println("Running with tol $tol")
+    graphlasso(cov, alpha, penalize_diag = false, maxit = 1000, tol = tol)[1]
 end
 
+#new
 function glasso_cov(data, weights, lambda = lambdaUni(size(data)...))
     n = size(data, 2)
     fullCov = cov(data, WeightVec(weights), vardim=2);
@@ -23,15 +28,31 @@ function glasso_cov(data, weights, lambda = lambdaUni(size(data)...))
     glasso(fullCov, rho)
 end
 
-function glasso(cov, rho)
+function lambdaUni(p, n)
+    sqrt(2 * n * log(p)) / 2
+end
+
+#old
+function glasso_cov_old(data, weights, lambda = lambdaUni(size(data)...))
+    n = size(data, 2)
+    fullCov = cov(data, WeightVec(weights), vardim=2);
+
+    sumW = sum(weights)
+    piK = sumW / n;
+    rho = 2 * sqrt(piK) * lambda / sumW
+
+    glasso_old(fullCov, rho)
+end
+
+function glasso_old(cov, rho)
     if (rho == 0)
         cov
     else
         wi = false
         err = false
-        try 
+        try
             for i = 1:4
-                try 
+                try
                     wi = rifGlasso(cov, rho);
 
                     break
@@ -45,7 +66,7 @@ function glasso(cov, rho)
         wi = force_pos_def(wi)
 
         w = inv(cholfact(wi))
-        
+
         if(false && !isposdef(w))
             println("inverse of glasso result is not pos def!")
             println("inv of glasso result:")
@@ -58,13 +79,11 @@ function glasso(cov, rho)
         end
 
         w
-            
     end
 end
 
 function rifGlasso(cov, rho)
     #        Rif.initr()
-    
     # Initialize R environment
     glassor = Rif.importr("glasso")
 

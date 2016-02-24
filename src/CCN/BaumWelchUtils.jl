@@ -1,5 +1,5 @@
 module BaumWelchUtils
-export force_pos_def, labels_to_gamma, gamma_to_labels, model_to_networks, mat_network_sparsity, sorted_edges, unique_by
+export force_pos_def, labels_to_gamma, gamma_to_labels, model_to_networks, mat_network_sparsity, sorted_edges, unique_by, states_to_networks
 
 using HMMTypes
 
@@ -51,10 +51,14 @@ function gamma_to_labels(gamma :: Array{Float64, 2})
 end
 
 function model_to_networks(model :: HMMStateModel)
+    states_to_networks(model.states)
+end
+
+function states_to_networks(states :: Array{HMMState, 1})
     [state.active ?
      inv(cholfact(cov(state.dist))) :
      Void
-     for state = model.states]
+     for state = states]
 end
 
 ## Transpose ##
