@@ -33,6 +33,7 @@ default_output_file = Void
 default_n = 10000
 default_p = 10
 default_k = 5
+default_seed = 5
 default_emission_dist_ids = ["true", "diagonal", "glasso", "full"]
 default_emission_dists = [emission_dist_table[id]
                           for id = default_emission_dist_ids]
@@ -75,7 +76,8 @@ function synth_validation(output_file :: AbstractString = default_output_file;
                           densities :: Array{Float64} = default_densities,
                           iterations :: Int = default_iterations,
                           test_verbose_flag :: Bool = default_test_verbose,
-                          model_verbose_flag :: Bool = default_model_verbose)
+                          model_verbose_flag :: Bool = default_model_verbose,
+                          seed :: Int = default_seed)
     test_verbose = test_verbose_flag ? 0 : Void
     model_verbose = model_verbose_flag ? 0 : Void
 
@@ -100,12 +102,13 @@ function synth_validation(output_file :: AbstractString = default_output_file;
                                                    for density = densities]
 
     (vars, ticks, res) = evaluate_measures(validation_measures,
-                                     models,
-                                     data_generators,
-                                     n,
-                                     n,
-                                     iterations = iterations,
-                                     verbose = test_verbose)
+                                           models,
+                                           data_generators,
+                                           n,
+                                           n,
+                                           iterations = iterations,
+                                           verbose = test_verbose,
+                                           seed = seed)
 
     results = (vars, ticks, res, (n, p, k))
 
@@ -133,7 +136,8 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
                            train_n = 10000,
                            holdout_n = 10000;
                            iterations :: Int64 = 1,
-                           verbose = Void)
+                           verbose = Void,
+                           seed = seed)
     # Indicate the index order for the result tensor
     variable_labels  = ("model_optimizer",  "data_generator",  "validation_measure",   "iteration")
     variable_indices = ( model_optimizers,   data_generators,   validation_measures,  1:iterations)
@@ -151,7 +155,7 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
     joint_measure = join_measures([measure for (name, measure) = validation_measures])
 
     # Seed consistently so that results are reproducible (assuming the same data generating settings)
-    srand(2)
+    srand(seed)
 
     # Evaluate the measures with each combination of variable
     for (gen_ix, (gen_tick, gen_fn)) = enumerate(data_generators)
@@ -332,6 +336,10 @@ function parse_commandline()
             help = "Number of states in the true and fit models"
             arg_type = Int
             default = default_k
+        "--seed"
+            help = "Seed the random number generator for generating data"
+            arg_type = Int
+            default = default_seed
         "--iterations", "-i"
             help = "Number of tracks in the synthetic datasets"
             arg_type = Int
