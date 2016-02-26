@@ -12,7 +12,6 @@ using GraphLasso
 
 function glasso(cov, alpha)
     tol = 1e-4
-    println("Running with tol $tol")
     graphlasso(cov, alpha, penalize_diag = false, maxit = 1000, tol = tol)[1]
 end
 

@@ -1,5 +1,5 @@
 module SyntheticValidation
-export evaluate_measures, synth_validation
+export evaluate_measures, synth_validation, fit_glasso, fit_full_cov, fit_diagonal_cov, fit_glasso_
 
 using StatsBase
 using HMMTypes
@@ -14,20 +14,15 @@ using Compat
 
 using ArgParse
 
-emission_dist_table = Dict("true" => ("True model", Void),
-                           "diagonal" => ("Diagonal Covariance BW", fit_diag_cov),
-                           "glasso" => ("GLASSO BW", fit_glasso),
-                           "full" => ("Full Covariance BW", fit_full_cov))
-validation_measure_table = Dict("label_accuracy" => ("Label Accuracy",
-                                                     hard_label_accuracy_measure),
-                                "edge_accuracy" => ("Edge Accuracy",
-                                                    hard_network_edge_accuracy_measure),
-                                "test_ll" => ("Test Log-Likelihood",
-                                              test_loglikelihood_measure),
-                                "enrichment_fold" => ("Network Enrichment Fold",
-                                                      network_enrichment_fold_measure),
-                                "edge_matches" => ("Network Edge Matches",
-                                                   network_edge_matches_measure))
+emission_dist_table = Dict("true" => Void,
+                           "diagonal" =>  fit_diag_cov,
+                           "glasso" =>  fit_glasso,
+                           "full" =>  fit_full_cov)
+validation_measure_table = Dict("label_accuracy" => hard_label_accuracy_measure,
+                                "edge_accuracy" => hard_network_edge_accuracy_measure,
+                                "test_ll" => test_loglikelihood_measure,
+                                "enrichment_fold" => network_enrichment_fold_measure,
+                                "edge_matches" => network_edge_matches_measure)
 
 default_output_file = Void
 default_n = 10000
@@ -81,7 +76,7 @@ function synth_validation(output_file :: AbstractString = default_output_file;
     test_verbose = test_verbose_flag ? 0 : Void
     model_verbose = model_verbose_flag ? 0 : Void
 
-    logstrln("Starting evaluation", test_verbose)
+    logstrln("%% Starting evaluation", test_verbose)
 
     # Check to make sure the file is writable - fail early!
     if output_file != Void
@@ -110,14 +105,14 @@ function synth_validation(output_file :: AbstractString = default_output_file;
                                            verbose = test_verbose,
                                            seed = seed)
 
-    results = (vars, ticks, res, (n, p, k))
+    results = (vars, ticks, res, (n, p, k, seed))
 
     # Dump the results
     if output_file != Void
         open(s -> serialize(s, results), output_file, "w")
     end
 
-    logstrln("Complete", test_verbose)
+    logstrln("%% Complete", test_verbose)
 
     results
 end
@@ -149,8 +144,6 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
     variable_ticks = [[t[1] for t = arr] for arr = variable_indices]
 
     # Array indexed by each variable tick
-    result_tensor = convert(Array{Any, 4}, zeros(variable_lengths...))
-
     # Combine all of the measures into one, which will be split up after use
     joint_measure = join_measures([measure for (name, measure) = validation_measures])
 
@@ -159,9 +152,9 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
 
     # Evaluate the measures with each combination of variable
     for (gen_ix, (gen_tick, gen_fn)) = enumerate(data_generators)
-        logstrln("Generator $gen_ix/$(length(data_generators)) \"$gen_tick\"", verbose)
+        logstrln("%% Generator $gen_ix/$(length(data_generators)) \"$gen_tick\"", verbose)
         for iter_ix = 1:iterations
-            logstrln("Iteration $iter_ix/$iterations", verbose)
+            logstrln("%% Iteration $iter_ix/$iterations", verbose)
             # build a SynthDatabase with gen_fn
             all_data, all_labels, true_model = gen_fn(train_n + holdout_n)
             train_data = all_data[:, 1:train_n]
@@ -175,7 +168,7 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
                                    true_model)
 
             for (model_ix, (model_tick, model_fn)) = enumerate(model_optimizers)
-                logstrln("Model optimizer $model_ix/$(length(model_optimizers)) \"$model_tick\"", verbose)
+                logstrln("%% Model optimizer $model_ix/$(length(model_optimizers)) \"$model_tick\"", verbose)
 
                 measure_results = evaluate_measure(joint_measure,
                                                    model_fn,
@@ -245,7 +238,8 @@ function best_networks(;
     found_networks = states_to_networks(new_states)
 
     true_networks = model_to_networks(true_model)
-    enrichments = [ValidationMeasures.network_enrichment(t[1], t[2]) for t = zip(found_networks, true_networks)]
+    enrichments = [ValidationMeasures.network_enrichment(t[1], t[2])
+                   for t = zip(found_networks, true_networks)]
 
     Dict(:true_model => true_model,
          :true_labels => true_labels,
@@ -288,7 +282,12 @@ function synth_data_model(;
                           emission_dist = fit_full_cov,
                           density = 1.0,
                           match_states = true,
+                          seed = Void,
                           verbose = false)
+    if(seed != Void)
+        srand(seed)
+    end
+
     true_model = rand_HMM_model(p, k, density = density, mean_range = 0)
     (data, true_labels) = rand_HMM_data(n, p, true_model)[1:2]
     (unordered_estimate, unordered_model, ll) = baum_welch(data, k, emission_dist,
@@ -377,10 +376,10 @@ function synth_eval_from_cli()
     test_verbose = args["test-verbose"]
     iterations = args["iterations"]
     emission_dist_ids = split(args["emission-dists"], ",")
-    emission_dists = [emission_dist_table[id]
+    emission_dists = [(id, emission_dist_table[id])
                       for id = emission_dist_ids]
     validation_measure_ids = split(args["validation-measures"], ",")
-    validation_measures = Tuple{ASCIIString,Function}[validation_measure_table[id]
+    validation_measures = Tuple{ASCIIString,Function}[(id, validation_measure_table[id])
                                                       for id = validation_measure_ids]
     densities = map(float, split(args["densities"], ","))
 

@@ -34,7 +34,7 @@ end
 function filter_indices(filterBy, header, metadata)
     allowedKeys = Set(filter_keys_by_value(metadata, filterBy)); 
 
-    filter(i -> in(header[i], allowedKeys), [1:size(header)[1]]);
+    filter(i -> in(header[i], allowedKeys), 1:size(header)[1]);
 end
 
 function load_filtered(; filterBy = x -> x["cellType"] == "K562",
