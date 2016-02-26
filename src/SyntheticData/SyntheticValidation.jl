@@ -138,6 +138,7 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
     variable_indices = ( model_optimizers,   data_generators,   validation_measures,  1:iterations)
     variable_lengths = [length(var) for var = variable_indices]
 
+
     # Ordered array of arrays of function labels,
     # e.g. [["val_measure1", "val_measure2"],
     #       ["model_opt1", "model_opt2"]]
@@ -151,6 +152,7 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
     srand(seed)
 
     # Evaluate the measures with each combination of variable
+    result_tensor = Array(Any, variable_lengths...)
     for (gen_ix, (gen_tick, gen_fn)) = enumerate(data_generators)
         logstrln("%% Generator $gen_ix/$(length(data_generators)) \"$gen_tick\"", verbose)
         for iter_ix = 1:iterations
