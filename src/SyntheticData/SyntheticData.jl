@@ -105,7 +105,7 @@ function randInvcov(p)
 end
 
 # From Scott. Thanks Scott!
-function rand_cov(K, netDensity)
+function rand_cov_old(K, netDensity)
     IC = diagm(abs(randn(K)))
     for i in 1:K, j in 1:i-1
         IC[i,j] = rand() < netDensity ? rand()-1.01 : 0.0
@@ -116,11 +116,48 @@ function rand_cov(K, netDensity)
         IC -= eye(K)*mineval*1.01
     end
     C = inv(IC)
-    Base.cov2cor!(C, sqrt(diag(C)))
+#    Base.cov2cor!(C, sqrt(diag(C)))
+end
+
+function zero_rand_offdiag_pairs!(m, num_pairs_to_zero)
+    indices = filter(t -> t[2] < t[1], [(i, j) for i = 1:size(m, 1), j = 1:size(m, 2)])
+    ixs_to_zero = sample(indices, num_pairs_to_zero, replace=false)
+    for (i, j) = ixs_to_zero
+        m[i, j] = 0.0;
+        m[j, i] = 0.0;
+    end
+end
+
+# From Scott. Thanks Scott!
+function rand_cov(n, net_density)
+    IC = diagm(abs(randn(n)))
+    for i = 1:n
+        for j = 1:i
+            IC[i, j] = rand()
+            IC[j, i] = IC[i, j]
+        end
+    end
+
+    num_to_zero = round(Int, (n * n - n) * (1 - net_density) / 2.0)
+    zero_rand_offdiag_pairs!(IC, num_to_zero)
+
+    mineval = minimum(eig(IC)[1])
+    if mineval < 0
+        IC -= eye(n)*mineval*1.01
+    end
+    C = inv(cholfact(IC))
+#    Base.cov2cor!(C, sqrt(diag(C)))
+end
+
+function cov_network_density(m; eps = 1e-8)
+    im = inv(cholfact(m))
+    p = size(m, 1)
+    num_nonzero = length(filter(x -> abs(x) > eps, im + eye(p)))
+    (num_nonzero-p) / (p*p-p)
 end
 
 function rand_cov_(p, density)
-    # generate 30 psd matricies with aprox. correct sparsities
+    #generate 30 psd matricies with aprox. correct sparsities
     aprox_invcovs = [aprox_sparse_psd_matrix(p, density) for i = 1:30]
 
     # measure closeness to desired density
@@ -132,18 +169,10 @@ function rand_cov_(p, density)
     normalize_determinant(B)
 end
 
-# TODO only measure density of off-diags
-function mat_density(m; eps = 10e-6)
-    p = size(m, 1)
-    num_zero = length(filter(x -> x < eps, m + eye(p)))
-    num_zero / (p*p-p)
-end
-
 function normalize_determinant(m :: Array{Float64, 2}, to = 1)
     c = (to/det(m))^(1/size(m, 1))
     c * m
 end
-
 
 function aprox_sparse_psd_matrix(p, density)
     generator = () -> rand(p, p)

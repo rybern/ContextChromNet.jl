@@ -29,7 +29,7 @@ end
 
 function sorted_edges(network; eps = 1e-8, filter_small = false)
     weighted = weighted_edges(network, eps = eps, filter_small = filter_small)
-    map(t -> t[1], sort(weighted, by = t -> abs(t[2])))
+    map(t -> t[1], sort(weighted, by = t -> abs(t[2]), rev = true))
 end
 
 function ix_to_exp_pair(header, ix)
@@ -98,10 +98,10 @@ function enrichment(sorted_truth :: Array{Bool, 1})
 end
 
 function network_enrichment(network,
-                             pairs = load_pairs(),
-                             header = load_filtered_header(),
-                             mapping = load_mapping(),
-                             target_blacklist = Set(["Q71DI3",
+                            pairs = load_pairs(),
+                            header = load_filtered_header(),
+                            mapping = load_mapping(),
+                            target_blacklist = Set(["Q71DI3",
                                                      "P0C0S5",
                                                      "P62805",
                                                      "P84243"]))

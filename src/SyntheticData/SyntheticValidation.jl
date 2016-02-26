@@ -299,7 +299,7 @@ function synth_data_model(;
 
     true_networks = model_to_networks(true_model)
     found_networks = model_to_networks(model)
-    enrichments = [ValidationMeasures.network_enrichment(t[1], t[2]) for t = zip(found_networks, true_networks)]
+    enrichments = [ValidationMeasures.network_enrichment_fold(t[1], t[2]) for t = zip(found_networks, true_networks)]
 
     label_accuracy = hard_label_accuracy(estimate.gamma, true_labels)
 

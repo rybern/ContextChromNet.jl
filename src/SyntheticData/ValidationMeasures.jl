@@ -89,9 +89,13 @@ function network_edge_matches(found_network, true_network; eps = 1e-8)
     true_edges = Set(sorted_edges(true_network, eps = eps, filter_small = true))
     num_true_edges = length(true_edges)
 
-    all_found_edges = sorted_edges(found_network, eps = eps, filter_small = true)
+    all_found_edges = sorted_edges(found_network, eps = eps, filter_small = false)
+    #all_found_edges = reverse(all_found_edges)
+    println("$(length(all_found_edges)) ?< $(num_true_edges))")
     num_found_edges = min(length(all_found_edges), num_true_edges)
     found_edges = all_found_edges[1:num_found_edges]
+    println("$(find(edge -> in((edge[1], edge[2]), true_edges) || in((edge[2], edge[1]), true_edges),
+            all_found_edges))")
 
     (map(edge -> in((edge[1], edge[2]), true_edges) || in((edge[2], edge[1]), true_edges),
          found_edges),
@@ -107,6 +111,8 @@ function network_enrichment_fold(found_network, true_network; eps = 1e-8)
     (truths, num_found_edges, num_true_edges) = network_edge_matches(found_network,
                                                                      true_network,
                                                                      eps = eps)
+
+    println("$num_found_edges, $num_true_edges")
 
     found_true = num_found_edges == 0 ? 0 : sum(truths)
     num_possible = size(found_network, 1) * (size(found_network, 2) - 1) / 2
