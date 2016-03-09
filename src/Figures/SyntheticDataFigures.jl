@@ -1,12 +1,9 @@
 module SyntheticDataFigures
 
-#using BarchartPlots
-#using PyPlot.(figure)
 using PyPlot.(savefig)
 using SimplePlot
 using HypothesisTests
 using ArgParse
-
 
 function build_figures(results_file,
                        output_directory;
@@ -35,7 +32,8 @@ function average_iteration_bars(ticks, measure_res; preprocess = identity)
                 vec(convert_mean(map(preprocess,
                                      slice(measure_res, model_ix, :, :)),
                                  2)), #average each generator over iterations
-                model_name)
+                model_name,
+                color = colors[model_ix])
             for (model_ix, model_name) = enumerate(ticks[1])]
 end
 
@@ -101,25 +99,42 @@ end
 function plot_enrichment_curve(ticks, measure_res)
     (n_models, n_gens, n_iters) = size(measure_res)
     n_states = length(measure_res[1,1,1])
+    model_ixs = [2, 3]
 
-    gen = 2
-    model_ix = 2
+    gen_ix = 3
+    gen_name = ticks[2][gen_ix]
 
+    lines = []
+    for model_ix = model_ixs
+        model_name = ticks[1][model_ix]
+        model_curves = []
+        for iteration_ix = 1:n_iters, state_ix = 1:n_states
+            # Calculate an enrichment curve from edge matching data
+            curve = enrichment_curve(measure_res[model_ix, gen_ix, iteration_ix][state_ix])
+            push!(model_curves, curve)
 
-    # Average enrichments over both iteration and states
-    curves = [line(enrichment_curve(measure_res[model_ix, gen, iteration_ix][state_ix]),
-                   model_name,
-                   color=colors[model_ix], alpha=0.7)
-              for
-              iteration_ix = 1:n_iters,
-              state_ix=1:n_states,
-              (model_ix, model_name) = enumerate(ticks[1])];
+            # Create plot element line and add it to the list
+            curve_line = line(curve,
+                              color=colors[model_ix],
+                              alpha=0.4)
+            push!(lines, curve_line)
+        end
 
-    fig = axis(curves...,
+        # Calculate the average curve for this model and push it
+        avg_curve = mean(reduce(hcat, model_curves), 2)
+        avg_line = line(avg_curve,
+                        model_name,
+                        color=colors[model_ix], alpha = 1.0, linewidth=4)
+        push!(lines, avg_line)
+    end
+
+    # Generate a figure with all of the lines
+    fig = axis(lines...,
                legend = "upper right",
                ylabel = "Proportion correct",
                xlabel = "Number of edges predicted",
-               title = "Enrichment Curve");
+               title = "Enrichment Curve ($gen_name)",
+               ylims = (0.0, 1.05))
 end
 
 function convert_mean(m, args...; kwargs...)

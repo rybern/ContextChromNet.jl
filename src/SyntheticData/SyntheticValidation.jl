@@ -27,14 +27,19 @@ validation_measure_table = Dict("label_accuracy" => hard_label_accuracy_measure,
 default_output_file = Void
 default_n = 10000
 default_p = 10
-default_k = 5
+default_restarts = 5
+default_gen_k = 5
 default_seed = 5
 default_emission_dist_ids = ["true", "diagonal", "glasso", "full"]
 default_emission_dists = [emission_dist_table[id]
                           for id = default_emission_dist_ids]
+default_emission_dist_pairs = [(id, emission_dist_table[id])
+                               for id = default_emission_dist_ids]
 default_validation_measure_ids = ["label_accuracy", "edge_accuracy", "test_ll", "enrichment_fold", "edge_matches"]
 default_validation_measures = [validation_measure_table[id]
                                for id = default_validation_measure_ids]
+default_validation_measure_pairs = Tuple{ASCIIString, Function}[(id, validation_measure_table[id])
+                                                                for id = default_validation_measure_ids]
 default_densities = [1.0,0.8,0.6,0.4,0.3,0.2,0.1]
 default_iterations = 10
 default_test_verbose = true
@@ -62,14 +67,16 @@ end
 # Bloated function
 # Translate lists of interesting parameters to lists of generators/models/measures
 # Also supports file output
-function synth_validation(output_file :: AbstractString = default_output_file;
+function synth_validation(output_file :: Union{Type{Void}, AbstractString} = default_output_file;
                           n :: Int = default_n,
                           p :: Int = default_p,
-                          k :: Int = default_k,
-                          emission_dists = default_emission_dists,
-                          validation_measures :: Array{Tuple{ASCIIString, Function}} = default_validation_measures,
+                          model_restarts :: Int = default_restarts,
+                          emission_dists = default_emission_dist_pairs,
+                          gen_k :: Int = default_gen_k,
+                          model_k :: Int = gen_k,
                           densities :: Array{Float64} = default_densities,
                           iterations :: Int = default_iterations,
+                          validation_measures :: Array{Tuple{ASCIIString, Function}} = default_validation_measure_pairs,
                           test_verbose_flag :: Bool = default_test_verbose,
                           model_verbose_flag :: Bool = default_model_verbose,
                           seed :: Int = default_seed)
@@ -86,13 +93,13 @@ function synth_validation(output_file :: AbstractString = default_output_file;
     # Build models from various emission distributions
     models = [(emission_label,
                emission_dist == Void ? Void :
-               (data, k) -> baum_welch(5, data, k, emission_dist, verbose = model_verbose))
+               (data) -> baum_welch(model_restarts, data, model_k, emission_dist, verbose = model_verbose))
               for (emission_label, emission_dist) = emission_dists]
 
     data_generators = Tuple{ASCIIString, Function}[("Generating density $(round(density, 1))",
                                                     n -> rand_HMM_data(n, p,
                                                                        rand_HMM_model(p,
-                                                                                      k,
+                                                                                      gen_k,
                                                                                       density = density)))
                                                    for density = densities]
 
@@ -105,7 +112,7 @@ function synth_validation(output_file :: AbstractString = default_output_file;
                                            verbose = test_verbose,
                                            seed = seed)
 
-    results = (vars, ticks, res, (n, p, k, seed))
+    results = (vars, ticks, res, (n, p, gen_k, model_k, seed))
 
     # Dump the results
     if output_file != Void
@@ -191,34 +198,46 @@ end
 # Create data using the data generator, optimize the model on the data, and then measure the model.
 function evaluate_measure(# See ValidationMeasures.jl
                           validation_measure :: Function,
-                          #(data, k) -> (estimate, model, log-likelihood)
+                          #(data) -> (estimate, model, log-likelihood)
                           model_optimizer :: Union{Type{Void},Function},
                           dataset :: SynthDataset)
-    # Initialize data
-    k = size(dataset.true_model.trans, 1)
-
     # Build model
     if model_optimizer != Void
         # Run optimizer
-        (found_estimate_unordered, found_model_unordered, found_ll) =
-            model_optimizer(dataset.train_data, k)
+        (found_estimate, found_model, found_ll) = model_optimizer(dataset.train_data)
 
-        (found_estimate, found_model) = match_states(found_estimate_unordered,
-                                                     found_model_unordered,
-                                                     dataset.train_labels,
-                                                     dataset.true_model)
+
+
+        #(found_estimate, found_model, label_confusion_matrix) = match_states(found_estimate_unordered,
+                                                                             #dataset.train_labels,
+                                                                             #found_model_unordered,
+                                                                             #dataset.true_model)
+
+        found_labels = gamma_to_labels(found_estimate.gamma)
+        found_k = size(found_model.trans, 1)
+
+        train_labels = dataset.train_labels
+        gen_k = size(dataset.true_model.trans, 1)
+
+        confusion_matrix = label_confusion_matrix(found_labels, found_k,
+                                                  train_labels, gen_k)
     else
         # If no optimizer provided, use the truth model
-        found_estimate = HMMEstimate(labels_to_gamma(dataset.train_labels, k))
+        gen_k = size(dataset.true_model.trans, 1)
+        found_estimate = HMMEstimate(labels_to_gamma(dataset.train_labels, gen_k))
         found_model = dataset.true_model
-        found_ll = log_likelihood(dataset.train_data, k, dataset.true_model, dist_log_pdf)
+        found_ll = log_likelihood(dataset.train_data, gen_k, dataset.true_model, dist_log_pdf)
+
+        state_counts = counts(dataset.train_labels, 1:gen_k)
+        confusion_matrix = diagm(state_counts)
     end
 
     # Measure the quality of the model
     validation_measure(dataset.train_data, dataset.train_labels,
                        dataset.test_data, dataset.test_labels,
                        dataset.true_model,
-                       found_estimate, found_model, found_ll)
+                       found_estimate, found_model, found_ll,
+                       confusion_matrix)
 end
 
 function best_networks(;
@@ -333,10 +352,18 @@ function parse_commandline()
             help = "Number of tracks in the synthetic datasets"
             arg_type = Int
             default = default_p
-        "--num-states", "-k"
-            help = "Number of states in the true and fit models"
+        "--num-gen-states", "-k"
+            help = "Number of states in the true models"
             arg_type = Int
-            default = default_k
+            default = default_gen_k
+        "--num-model-states"
+            help = "Number of states in the fit models"
+            arg_type = Int
+            default = default_gen_k
+        "--num-model-restarts"
+            help = "Number of random starting points to maximize each Baum-Welch over"
+            arg_type = Int
+            default = default_restarts
         "--seed"
             help = "Seed the random number generator for generating data"
             arg_type = Int
@@ -373,7 +400,9 @@ function synth_eval_from_cli()
     output_file = args["output-file"]
     n = args["num-observations"]
     p = args["num-tracks"]
-    k = args["num-states"]
+    model_restarts = args["num-model-restarts"]
+    gen_k = args["num-gen-states"]
+    model_k = args["num-model-states"]
     model_verbose = args["model-verbose"]
     test_verbose = args["test-verbose"]
     iterations = args["iterations"]
@@ -388,7 +417,9 @@ function synth_eval_from_cli()
     synth_validation(output_file,
                      n = n,
                      p = p,
-                     k = k,
+                     model_restarts = model_restarts,
+                     gen_k = gen_k,
+                     model_k = model_k,
                      emission_dists = emission_dists,
                      validation_measures = validation_measures,
                      densities = densities,

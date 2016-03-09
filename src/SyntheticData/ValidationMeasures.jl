@@ -5,16 +5,22 @@ using EdgeUtils
 using BaumWelchUtils
 using BaumWelch
 using EmissionDistributions
+using StateMatching
 
 function join_measures(measures)
     function joint_measure(data_train, labels_train,
                            data_holdout, labels_holdout,
                            true_model,
-                           found_estimate, found_model, found_ll)
+                           found_estimate, found_model, found_ll,
+                           confusion_matrix = label_confusion_matrix(gamma_to_labels(found_estimate.gamma),
+                                                                     size(found_model.trans, 1),
+                                                                     labels_train,
+                                                                     size(true_model.trans, 1)))
         [measure(data_train, labels_train,
                  data_holdout, labels_holdout,
                  true_model,
-                 found_estimate, found_model, found_ll)
+                 found_estimate, found_model, found_ll,
+                 confusion_matrix)
          for measure = measures]
     end
 end
@@ -22,63 +28,88 @@ end
 function hard_label_accuracy_measure(data_train, labels_train,
                                      data_holdout, labels_holdout,
                                      true_model,
-                                     found_estimate, found_model, found_ll)
-    hard_label_accuracy(found_estimate.gamma, labels_train)
+                                     found_estimate, found_model, found_ll,
+                                     confusion_matrix)
+    # Permute the found gamma to best match the original labels
+    new_to_old = StateMatching.label_permutation(confusion_matrix)
+    permuted_gamma = StateMatching.permute_gamma(new_to_old, found_estimate.gamma)
+
+    # Find label accuracy using the permuted gamma
+    hard_label_accuracy(permuted_gamma, labels_train)
 end
 
 function hard_network_edge_accuracy_measure(data_train, labels_train,
                                             data_holdout, labels_holdout,
                                             true_model,
-                                            found_estimate, found_model, found_ll)
-    true_networks = model_to_networks(true_model)
-    found_networks = model_to_networks(found_model)
-
-    [hard_network_edge_accuracy(network_pair...)
-     for network_pair = collect(zip(found_networks, true_networks))]
+                                            found_estimate, found_model, found_ll,
+                                            confusion_matrix)
+    weighted_average_measures(hard_network_edge_accuracy,
+                              found_model,
+                              true_model,
+                              confusion_matrix)
 end
 
 function train_loglikelihood_measure(data_train, labels_train,
                                      data_holdout, labels_holdout,
                                      true_model,
-                                     found_estimate, found_model, found_ll)
+                                     found_estimate, found_model, found_ll,
+                                     confusion_matrix)
     found_ll
 end
 
 function test_loglikelihood_measure(data_train, labels_train,
                                     data_holdout, labels_holdout,
                                     true_model,
-                                    found_estimate, found_model, found_ll)
+                                    found_estimate, found_model, found_ll,
+                                    confusion_matrix)
     k = size(found_model.trans, 1)
     log_likelihood(data_holdout, k, found_model, dist_log_pdf)
-end
-
-function whole_cov_data_measure(data_train, labels_train,
-                                data_holdout, labels_holdout,
-                                true_model,
-                                found_estimate, found_model, found_ll)
-    cov(data)
 end
 
 function network_enrichment_fold_measure(data_train, labels_train,
                                          data_holdout, labels_holdout,
                                          true_model,
-                                         found_estimate, found_model, found_ll)
-    true_networks = model_to_networks(true_model)
-    found_networks = model_to_networks(found_model)
-
-    [network_enrichment_fold(network_pair...)
-     for network_pair = collect(zip(found_networks, true_networks))]
+                                         found_estimate, found_model, found_ll,
+                                         confusion_matrix)
+    weighted_average_measures(network_enrichment_fold,
+                              found_model,
+                              true_model,
+                              confusion_matrix)
 end
 
 function network_edge_matches_measure(data_train, labels_train,
                                       data_holdout, labels_holdout,
                                       true_model,
-                                      found_estimate, found_model, found_ll)
+                                      found_estimate, found_model, found_ll,
+                                      confusion_matrix)
+    weighted_average_measures(network_edge_matches,
+                              found_model,
+                              true_model,
+                              confusion_matrix,
+                              join = zip)
+
+end
+
+function weighted_average_measures(pairwise_measure :: Function,
+                                   found_model,
+                                   true_model,
+                                   confusion_matrix;
+                                   join = dot)
     true_networks = model_to_networks(true_model)
     found_networks = model_to_networks(found_model)
 
-    [network_edge_matches(network_pair...)[1]
-     for network_pair = collect(zip(found_networks, true_networks))]
+    pairwise_matches = [pairwise_measure(found_network, true_network)
+                        for found_network = found_networks, true_network = true_networks]
+
+    weighted_matches = weighted_average_measures(pairwise_matches,
+                                                 confusion_matrix,
+                                                 join = join)
+end
+
+function weighted_average_measures(measure_matrix, confusion_matrix; join = dot)
+    [join(vec(confusion_matrix[i, :] / sum(confusion_matrix[i, :])),
+          vec(measure_matrix[i, :]))
+     for i = 1:size(confusion_matrix, 1)]
 end
 
 function network_edge_matches(found_network, true_network; eps = 1e-8)

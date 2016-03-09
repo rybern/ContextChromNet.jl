@@ -1,7 +1,16 @@
 module BaumWelchUtils
-export force_pos_def, labels_to_gamma, gamma_to_labels, model_to_networks, mat_network_sparsity, sorted_edges, unique_by, states_to_networks
+export force_pos_def, labels_to_gamma, gamma_to_labels, model_to_networks, mat_network_sparsity, sorted_edges, unique_by, states_to_networks, label_confusion_matrix
 
 using HMMTypes
+
+function label_confusion_matrix(found_labels, found_k,
+                                true_labels, true_k)
+    label_confusion_matrix = zeros(Int32, found_k, true_k)
+    for label_pair = zip(found_labels, true_labels)
+        label_confusion_matrix[label_pair...] += 1
+    end
+    label_confusion_matrix
+end
 
 function unique_by(vec,
                     by)
@@ -36,7 +45,7 @@ function force_pos_def(m)
     error("can't force pos def. eigs are ", eig(m)[1])
 end
 
-function labels_to_gamma{I <: Integer}(labels :: Array{I, 1}, k :: Integer)
+function labels_to_gamma(labels, k)
     n = length(labels)
     gamma = zeros(k, n)
     for i = 1:k
@@ -45,7 +54,7 @@ function labels_to_gamma{I <: Integer}(labels :: Array{I, 1}, k :: Integer)
     gamma
 end
 
-function gamma_to_labels(gamma :: Array{Float64, 2})
+function gamma_to_labels(gamma)
     n = size(gamma, 2)
     [indmax(gamma[:, i]) for i = 1:n]
 end
