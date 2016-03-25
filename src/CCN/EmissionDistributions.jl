@@ -79,10 +79,10 @@ function fit_dist_to_state(fit_dist)
     end
 
     function fit_states{N <: Number}(data :: AbstractArray{N, 2},
-                                       gamma :: Array{Float64, 2},
-                                       old_states :: Array{HMMState, 1} =
-                                       [HMMState(Void, true)
-                                        for i = 1:size(gamma, 1)])
+                                     gamma :: Array{Float64, 2},
+                                     old_states :: Array{HMMState, 1} =
+                                     [HMMState(Void, true)
+                                      for i = 1:size(gamma, 1)])
         k = length(old_states)
 
         gamma = gamma'
@@ -126,7 +126,7 @@ end
 function fit_dist_glasso_dynamic{N <: Number}(data :: AbstractArray{N, 2},
                                               weights)
     mu = mean(data, WeightVec(weights), 2)
-    cov = adaptive_glasso_mixture(data, weights)
+    cov = adaptive_glasso(data, weights)
 
     safe_mv_normal(mu, cov)
 end

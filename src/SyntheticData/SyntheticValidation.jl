@@ -18,6 +18,7 @@ using ArgParse
 emission_dist_table = Dict("true" => Void,
                            "diagonal" =>  fit_diag_cov,
                            "glasso" =>  fit_glasso,
+                           "glasso-dynamic" => fit_glasso_dynamic,
                            "full" =>  fit_full_cov)
 validation_measure_table = Dict("label_accuracy" => hard_label_accuracy_measure,
                                 "edge_accuracy" => hard_network_edge_accuracy_measure,
@@ -32,7 +33,7 @@ default_p = 10
 default_restarts = 5
 default_gen_k = 5
 default_seed = 5
-default_emission_dist_ids = ["true", "diagonal", "glasso", "full"]
+default_emission_dist_ids = collect(keys(emission_dist_table))
 default_emission_dists = [emission_dist_table[id]
                           for id = default_emission_dist_ids]
 default_emission_dist_pairs = [(id, emission_dist_table[id])
@@ -388,8 +389,7 @@ function parse_commandline()
             default = default_iterations
         "--emission-dists"
             help = "List (comma separated, no spaces) the emission distributions to optimize models with.
-Possibilities are: \"true\" (true model), \"diagonal\" (diagonal covariance matrix), \"glasso\" (graphical LASSO), \"full\" (unconstrained, full covariance matrix)"
-
+Possibilities are: \"true\" (true model), \"diagonal\" (diagonal covariance matrix), \"glasso\" (graphical LASSO), \"glasso-dynamic\" (graphical LASSO with optimized lambda), \"full\" (unconstrained, full covariance matrix)"
             default = join(default_emission_dist_ids, ",")
         "--validation-measures"
             help = "List (comma separated, no spaces) the validation measures to test models with. Possibilities: \"label_accuracy\" (hard label accuracy), \"edge_accuracy\" (hard edge accuracy), \"test_ll\" (test log-likelihood), \"enrichment_fold\" (network edge enrichment), \"edge_matches\" (boolean edge matches sorted by magnitude)"
@@ -442,7 +442,7 @@ function synth_eval_from_cli()
                      validation_measures = validation_measures,
                      densities = densities,
                      shapes = shapes,
-                     iterations = iterations,
+    iterations = iterations,
                      test_verbose_flag = test_verbose,
                      model_verbose_flag = model_verbose)
 end

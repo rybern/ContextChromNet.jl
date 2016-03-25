@@ -1,6 +1,6 @@
 module LambdaOptimization
 
-export adaptive_glasso_mixture
+export adaptive_glasso
 
 using BaumWelchUtils
 using StatsBase
@@ -57,31 +57,31 @@ end
 #can take out some repeated weight vector computations, like sums, props
 function build_lambda_likelihood(data, weights, k_folds)
     (p, n) = size(data)
-    k = size(weights, 2)
 
     folds = fold_interval(n, k_folds)
 
-    weight_sums = [sum(weights[:, i]) for i = 1:k]
-    weight_props = weight_sums / sum(weight_sums)
+    weight_sum = sum(weights)
+    test_sets = [view(data, :, folds[fold][2]) .* repeat(weights[folds[fold][2]], inner = [1, p])'
+                 for fold = 1:k_folds]
+    test_weights = [sum(view(weights, folds[fold][2]))
+                    for fold = 1:k_folds]
 
-    test_sets = [[view(data, :, folds[fold][2]) .* repeat(weights[folds[fold][2], i], inner = [1, p])' for fold = 1:k_folds] for i = 1:k]
-    test_weights = [[sum(view(weights, folds[fold][2], i)) for fold = 1:k_folds] for i = 1:k]
-
-    train_moments = [[disjoint_interval_mean_and_cov(data, weights[:, i], folds[fold][1]) for fold = 1:k_folds] for i = 1:k]
-    train_weights = [weight_sums[i] - test_weights[i] for i = 1:k]
-    train_weight_props = [train_weights[i] / weight_sums[i] for i = 1:k]
+    train_moments = [disjoint_interval_mean_and_cov(data, weights, folds[fold][1])
+                     for fold = 1:k_folds]
+    train_weights = weight_sum - test_weights
+    train_weight_props = train_weights / weight_sum
 
     function lambda_likelihood(lambda)
-        @parallel (x, y) -> (x + y) for (i, fold) = [(i, fold) for i = 1:k, fold = 1:k_folds]
-            coeficient = train_weight_props[i][fold] * weight_props[i]
+        @parallel (+) for fold = 1:k_folds
+            coeficient = train_weight_props[fold]
 
-            (mu, cov) = train_moments[i][fold]
-            r = rho(lambda, train_weights[i][fold], n)
+            (mu, cov) = train_moments[fold]
+            r = rho(lambda, train_weights[fold], n)
 
             fit_cov = glasso(cov, r)
 
             model = safe_mv_normal(mu, fit_cov)
-            likelihood = loglikelihood(model, test_sets[i][fold])
+            likelihood = loglikelihood(model, test_sets[fold])
             likelihood * coeficient
         end
     end
@@ -106,29 +106,21 @@ function disjoint_interval_mean_and_cov(arr, weights, intervals)
     (mu, weighted_avg_covs)
 end
 
-function adaptive_glasso_mixture(data,
-                                 weights;
-                                 n_ll_folds = 5,
-                                 lambda_stepsize = universal_lambda(size(data)...),
-                                 lambda_minimum = 0,
-                                 max_step_changes = 10,
-                                 max_jumps = 12)
+function adaptive_glasso(data,
+                         weights;
+                         n_ll_folds = 5,
+                         lambda_stepsize = universal_lambda(size(data)...),
+                         lambda_minimum = 0,
+                         max_step_changes = 10,
+                         max_jumps = 10)
     println("building ll penalty...")
     ll = build_lambda_likelihood(data, weights, n_ll_folds)
     println("doing optimization...")
     lambda = cup_direct_search(ll, lambda_stepsize, lambda_minimum, max_step_changes, max_jumps)[1]
     println("found lambda $lambda, universal is ", universal_lambda(size(data)...))
-    glasso_mixture(data, weights, lambda)
-end
-
-function glasso_mixture(data, weights, lambda)
-    n = size(data, 2)
-    k = size(weights, 2)
-    moments = [mean_and_cov(data, WeightVec(weights[:, i]), vardim = 2) for i = 1:k]
-    weight_sums = [sum(weights[:, i]) for i = 1:k]
-
-    rhos = [rho(lambda, weight_sums[i], n) for i = 1:k]
-    models = [safe_mv_normal(moments[i][1], glasso(moments[i][2], rhos[i])) for i = 1:k]
+    cov_ = cov(data, WeightVec(weights), vardim = 2)
+    r = rho(lambda, sum(weights), size(data, 2))
+    glasso(cov_, r)
 end
 
 end
