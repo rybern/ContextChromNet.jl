@@ -14,6 +14,7 @@ function rand_HMM_model(p :: Integer,
                         k :: Integer;
                         mean_range = .1,
                         density = .3,
+                        shape = .5,
                         dwell_prob = 3/4)
     dists = Array(MvNormal, k)
     for i = 1:k

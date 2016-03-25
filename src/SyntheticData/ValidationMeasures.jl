@@ -1,5 +1,5 @@
 module ValidationMeasures
-export join_measures, hard_label_accuracy_measure, hard_network_edge_accuracy_measure, network_enrichment_fold_measure, network_edge_matches_measure, train_loglikelihood_measure, test_loglikelihood_measure, whole_cov_data_measure, hard_network_edge_accuracy, hard_label_accuracy
+export join_measures, hard_label_accuracy_measure, num_active_states_measure, hard_network_edge_accuracy_measure, network_enrichment_fold_measure, network_edge_matches_measure, train_loglikelihood_measure, test_loglikelihood_measure, whole_cov_data_measure, hard_network_edge_accuracy, hard_label_accuracy
 
 using EdgeUtils
 using BaumWelchUtils
@@ -77,6 +77,13 @@ function network_enrichment_fold_measure(data_train, labels_train,
                               confusion_matrix)
 end
 
+function num_active_states_measure(data_train, labels_train,
+                                   data_holdout, labels_holdout,
+                                   true_model,
+                                   found_estimate, found_model, found_ll,
+                                   confusion_matrix)
+    length(filter(state -> state.active, found_model.states))
+end
 function network_edge_matches_measure(data_train, labels_train,
                                       data_holdout, labels_holdout,
                                       true_model,

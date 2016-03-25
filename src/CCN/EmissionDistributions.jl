@@ -2,11 +2,12 @@
 # emission_pdf :: data -> gamma -> log probability
 
 module EmissionDistributions
-export fit_full_cov, fit_diag_cov, fit_glasso, dist_log_pdf, state_sample, fit_glasso_old
+export fit_full_cov, fit_diag_cov, fit_glasso, dist_log_pdf, state_sample, fit_glasso_old, fit_glasso_dynamic
 
 using HMMTypes
 using GLasso
 using BaumWelchUtils
+using LambdaOptimization
 
 using Distributions
 using StatsBase
@@ -122,9 +123,17 @@ function fit_dist_diag_cov{N <: Number}(data :: AbstractArray{N, 2},
     safe_mv_normal(mu, cov .* eye(p))
 end
 
+function fit_dist_glasso_dynamic{N <: Number}(data :: AbstractArray{N, 2},
+                                              weights)
+    mu = mean(data, WeightVec(weights), 2)
+    cov = adaptive_glasso_mixture(data, weights)
+
+    safe_mv_normal(mu, cov)
+end
+
 function fit_dist_glasso{N <: Number}(data :: AbstractArray{N, 2},
                                       weights)
-    mu, cov_ = mean_and_cov(data, WeightVec(weights), vardim=2)
+    mu = mean(data, WeightVec(weights), 2)
     cov = glasso_cov(data, weights)
 
     safe_mv_normal(mu, cov)
@@ -140,29 +149,9 @@ end
 
 fit_full_cov = fit_dist_to_state(fit_dist_full_cov)
 fit_diag_cov = fit_dist_to_state(fit_dist_diag_cov)
+fit_glasso_dynamic = fit_dist_to_state(fit_dist_glasso_dynamic)
 fit_glasso = fit_dist_to_state(fit_dist_glasso)
 fit_glasso_old = fit_dist_to_state(fit_dist_glasso_old)
 dist_log_pdf = log_pdf_dist_to_state(logpdf!)
-
-function safe_mv_normal(mu :: Array{Float64},
-                        cov :: Array{Float64, 2},
-                        check_singular = false)
-    try
-        if (check_singular && det(10000*cov) == 0)
-            println("Singular matrix encountered. Sample not long enough.")
-            println("Temporarily using identity cov.")
-            cov = eye(size(cov,1))
-        end
-
-        MvNormal(vec(mu), cov)
-    catch e
-        cov_ = force_pos_def(cov)
-        try
-            MvNormal(vec(mu), cov_)
-        catch e2
-            error("repeat offender")
-        end
-    end
-end
 
 end

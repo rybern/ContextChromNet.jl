@@ -5,7 +5,7 @@ using SimplePlot
 using HypothesisTests
 using ArgParse
 
-function build_figures(results_file,
+function build_figures_v1(results_file,
                        output_directory;
                        include_measures = Void)
     results = open(deserialize, results_file)
@@ -23,29 +23,117 @@ function build_figures(results_file,
      for (measure_ix, measure) = measures]
 end
 
-function truncate_generator_names(generator_names)
-    [name[length(name)-2:length(name)] for name = generator_names]
+function build_figures(output_directory,
+                       results_file = "saved_outputs/3-23-16-synth-test.dump")
+    (vars, ticks, res, specs) = open(deserialize, results_file)
+    vars = collect(vars)
+    ticks = collect(ticks)
+
+    plot_test_ll_vs_model_k(vars, ticks, res, specs)
 end
 
-function average_iteration_bars(ticks, measure_res; preprocess = identity)
-    bars = [bar(truncate_generator_names(ticks[2]), # list of density strings
-                vec(convert_mean(map(preprocess,
-                                     slice(measure_res, model_ix, :, :)),
-                                 2)), #average each generator over iterations
-                model_name,
-                color = colors[model_ix])
-            for (model_ix, model_name) = enumerate(ticks[1])]
+
+function test_result_bars(results_file = "saved_outputs/3-23-16-synth-test.dump")
+    (vars, ticks, res, specs) = open(deserialize, results_file)
+
+    vars = collect(vars)
+    ticks = collect(ticks)
+
+    value_map = Dict("generator_density" => 1,
+                     "generator_shape" => 1,
+                     "validation_measure" => 2)
+
+    result_bars(vars, ticks, res,
+                value_map,
+                "num_model_states",
+                "distribution",
+                mean)
 end
 
-function plot_edge_accuracy(ticks, measure_res)
-    bars = average_iteration_bars(ticks, measure_res,
-                                  preprocess = convert_mean)
+function result_bars(vars,
+                     ticks,
+                     res,
+                     var_value_map,
+                     independant_var,
+                     line_var;
+                     process_final_shape = convert_mean,
+                     process_elements = identity)
+    res_inds = map(var -> var in keys(var_value_map) ? var_value_map[var] : (:), vars)
+    tensor = slice(res, res_inds...)
+
+    old_indep_ind = findfirst(vars, independant_var)
+    old_line_ind = findfirst(vars, line_var)
+
+    vars_not_in_map = [!(var in keys(var_value_map)) for var in vars]
+    inds_left = collect(1:length(size(res)))[vars_not_in_map]
+    indep_ind = findfirst(inds_left, old_indep_ind)
+    line_ind = findfirst(inds_left, old_line_ind)
+
+    tensor_bars(tensor,
+                ticks[old_indep_ind],
+                ticks[old_line_ind],
+                indep_ind,
+                line_ind,
+                process_final_shape = process_final_shape,
+                process_elements = process_elements)
+end
+
+function tensor_bars(tensor,
+                     xticks,
+                     line_ticks,
+                     independant_var,
+                     line_var;
+                     process_elements = identity,
+                     process_final_shape = identity)
+    bars = [bar(xticks,
+                [process_final_shape(map(process_elements, (slicedim(slicedim(tensor, line_var, line_ix),
+                                                                     independant_var,
+                                                                     ind_ix))))
+                 for ind_ix = 1:size(tensor)[independant_var]],
+                line_name,
+                color = colors[line_ix])
+            for (line_ix, line_name) = enumerate(line_ticks)]
+end
+
+function plot_edge_accuracy_vs_density(vars, ticks, res, specs;
+                                       model_k_ind = 1,
+                                       shape_ind = 1)
+    bars = result_bars(vars,
+                       ticks,
+                       res,
+                       Dict(MODEL_K_VARIABLE => model_k_ind,
+                            SHAPE_VARIABLE => shape_ind,
+                            MEASURE_VARIABLE => findfirst(ticks[findfirst(vars, MEASURE_VARIABLE)],
+                                                          EDGE_ACCURACY_MEASURE)),
+                       DENSITY_VARIABLE,
+                       DISTRIBUTION_VARIABLE,
+                       process_elements = convert_mean)
 
     fig = axis(bars...,
                legend = "upper right",
                ylabel = "Edge Accuracy",
                xlabel = "Generating Network Density",
                title = "Edge Accuracy vs. Generating Density")
+end
+
+function plot_test_ll_vs_model_k(vars, ticks, res, specs,
+                                 density_ind = 1,
+                                 shape_ind = 1)
+    bars = result_bars(vars,
+                       ticks,
+                       res,
+                       Dict(DENSITY_VARIABLE => density_ind,
+                            SHAPE_VARIABLE => shape_ind,
+                            MEASURE_VARIABLE => findfirst(ticks[findfirst(vars, MEASURE_VARIABLE)],
+                                                          TEST_LL_MEASURE)),
+                       MODEL_K_VARIABLE,
+                       DISTRIBUTION_VARIABLE)
+
+    fig = axis(bars...,
+               legend = "upper right",
+               ylabel = "Test-Log Likelihood",
+               xlabel = "Number of Model States",
+               title = "Test LL vs. Model K (True K: $(specs[3]))")
 end
 
 function plot_label_accuracy(ticks, measure_res)
@@ -137,15 +225,39 @@ function plot_enrichment_curve(ticks, measure_res)
                ylims = (0.0, 1.05))
 end
 
+function truncate_generator_names(generator_names)
+    [name[length(name)-2:length(name)] for name = generator_names]
+end
+
 function convert_mean(m, args...; kwargs...)
     mean(convert(Array{Float64}, m), args...; kwargs...)
 end
 
-plotting_functions = Dict("edge_accuracy" => plot_edge_accuracy,
-                          "label_accuracy" => plot_label_accuracy,
-                          "test_ll" => plot_test_ll,
-                          "enrichment_fold" => plot_enrichment_fold,
-                          "edge_matches" => plot_enrichment_curve)
+# measure_names
+EDGE_ACCURACY_MEASURE = "edge_accuracy"
+LABEL_ACCURACY_MEASURE = "label_accuracy"
+TEST_LL_MEASURE = "test_ll"
+ENRICHMENT_FOLD_MEASURE = "enrichment_fold"
+EDGE_MATCHES_MEASURE = "edge_matches"
+all_measures = [EDGE_ACCURACY_MEASURE,
+                LABEL_ACCURACY_MEASURE,
+                TEST_LL_MEASURE,
+                ENRICHMENT_FOLD_MEASURE,
+                EDGE_MATCHES_MEASURE]
+
+# variable names
+DISTRIBUTION_VARIABLE = "distribution"
+MODEL_K_VARIABLE = "num_model_states"
+DENSITY_VARIABLE = "generator_density"
+SHAPE_VARIABLE = "generator_shape"
+MEASURE_VARIABLE = "validation_measure"
+ITERATION_VARIABLE = "iteration"
+all_variables = [DISTRIBUTION_VARIABLE,
+                 MODEL_K_VARIABLE,
+                 DENSITY_VARIABLE,
+                 SHAPE_VARIABLE,
+                 MEASURE_VARIABLE,
+                 ITERATION_VARIABLE]
 
 colors = [
           "#3366CC", "#DC3912", "#FF9902", "#0C9618", "#0099C6",

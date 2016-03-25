@@ -22,7 +22,7 @@ end
 
 function fold_indices(k)
     not = i -> j -> i != j
-    interval = [1:k]
+    interval = collect(1:k)
     [(filter(not(i), interval), i) for i = interval]
 end
 

@@ -11,6 +11,7 @@ using EmissionDistributions
 using BaumWelchUtils
 using SimpleLogging
 using Compat
+using DataStructures
 
 using ArgParse
 
@@ -22,7 +23,8 @@ validation_measure_table = Dict("label_accuracy" => hard_label_accuracy_measure,
                                 "edge_accuracy" => hard_network_edge_accuracy_measure,
                                 "test_ll" => test_loglikelihood_measure,
                                 "enrichment_fold" => network_enrichment_fold_measure,
-                                "edge_matches" => network_edge_matches_measure)
+                                "edge_matches" => network_edge_matches_measure,
+                                "num_active_states" => num_active_states_measure)
 
 default_output_file = Void
 default_n = 10000
@@ -35,12 +37,13 @@ default_emission_dists = [emission_dist_table[id]
                           for id = default_emission_dist_ids]
 default_emission_dist_pairs = [(id, emission_dist_table[id])
                                for id = default_emission_dist_ids]
-default_validation_measure_ids = ["label_accuracy", "edge_accuracy", "test_ll", "enrichment_fold", "edge_matches"]
+default_validation_measure_ids = collect(keys(validation_measure_table))
 default_validation_measures = [validation_measure_table[id]
                                for id = default_validation_measure_ids]
 default_validation_measure_pairs = Tuple{ASCIIString, Function}[(id, validation_measure_table[id])
                                                                 for id = default_validation_measure_ids]
 default_densities = [1.0,0.8,0.6,0.4,0.3,0.2,0.1]
+default_shapes = [0.8, 0.2]
 default_iterations = 10
 default_test_verbose = true
 default_model_verbose = false
@@ -73,8 +76,9 @@ function synth_validation(output_file :: Union{Type{Void}, AbstractString} = def
                           model_restarts :: Int = default_restarts,
                           emission_dists = default_emission_dist_pairs,
                           gen_k :: Int = default_gen_k,
-                          model_k :: Int = gen_k,
+                          model_ks :: Array{Int64} = [gen_k],
                           densities :: Array{Float64} = default_densities,
+                          shapes :: Array{Float64} = default_shapes,
                           iterations :: Int = default_iterations,
                           validation_measures :: Array{Tuple{ASCIIString, Function}} = default_validation_measure_pairs,
                           test_verbose_flag :: Bool = default_test_verbose,
@@ -91,18 +95,19 @@ function synth_validation(output_file :: Union{Type{Void}, AbstractString} = def
     end
 
     # Build models from various emission distributions
-    models = [(emission_label,
+    models = [((emission_label, string(model_k)),
                emission_dist == Void ? Void :
                (data) -> baum_welch(model_restarts, data, model_k, emission_dist, verbose = model_verbose))
-              for (emission_label, emission_dist) = emission_dists]
-
-    data_generators = Tuple{ASCIIString, Function}[("Generating density $(round(density, 1))",
-                                                    n -> rand_HMM_data(n, p,
-                                                                       rand_HMM_model(p,
-                                                                                      gen_k,
-                                                                                      density = density)))
-                                                   for density = densities]
-
+              for (emission_label, emission_dist) = emission_dists,
+                  model_k = model_ks]
+    data_generators = Tuple{Tuple{ASCIIString,ASCIIString}, Function}[((string(shape), string(density)),
+                        n -> rand_HMM_data(n, p,
+                                           rand_HMM_model(p,
+                                                          gen_k,
+                                                          density = density,
+                                                          shape = shape)))
+                       for density = densities,
+                           shape = shapes]
     (vars, ticks, res) = evaluate_measures(validation_measures,
                                            models,
                                            data_generators,
@@ -112,7 +117,7 @@ function synth_validation(output_file :: Union{Type{Void}, AbstractString} = def
                                            verbose = test_verbose,
                                            seed = seed)
 
-    results = (vars, ticks, res, (n, p, gen_k, model_k, seed))
+    results = (vars, ticks, res, (n, p, gen_k, seed))
 
     # Dump the results
     if output_file != Void
@@ -133,23 +138,27 @@ end
 function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Function}},
                            # Array{Function} <: Array{Union{Function, Type{Void}}} is false.
                            # Immature language, have to give up on type system sometimes :(
-                           model_optimizers, #:: Array{Tuple{ASCIIString,Union{Type{Void}, Function}}}
-                           data_generators :: Array{Tuple{ASCIIString, Function}} = [("Random_HMM_p6k3", num -> rand_HMM_data(num, 6, 3))],
+                           model_optimizers, #:: Array{Tuple{Tuple{ASCIIString,ASCIIString},Union{Type{Void}, Function}}}
+                           data_generators :: Array{Tuple{Tuple{ASCIIString,ASCIIString}, Function}} = [("1.0", "1.0"), num -> rand_HMM_data(num, 6, 3)],
                            train_n = 10000,
                            holdout_n = 10000;
                            iterations :: Int64 = 1,
                            verbose = Void,
                            seed = seed)
     # Indicate the index order for the result tensor
-    variable_labels  = ("model_optimizer",  "data_generator",  "validation_measure",   "iteration")
-    variable_indices = ( model_optimizers,   data_generators,   validation_measures,  1:iterations)
-    variable_lengths = [length(var) for var = variable_indices]
-
-
     # Ordered array of arrays of function labels,
     # e.g. [["val_measure1", "val_measure2"],
     #       ["model_opt1", "model_opt2"]]
-    variable_ticks = [[t[1] for t = arr] for arr = variable_indices]
+    variables  = OrderedDict("distribution" => [opt[1][1] for opt = model_optimizers[:, 1]],
+                             "num_model_states" => [opt[1][2] for opt = model_optimizers[1, :]],
+                             "generator_density" => [gen[1][2] for gen = data_generators[:, 1]],
+                             "generator_shape" => [gen[1][1] for gen = data_generators[1, :]],
+                             "validation_measure" => [val[1] for val = validation_measures],
+                             "iteration" => map(string, 1:iterations))
+
+    variable_lengths = map(length, values(variables))
+    result_tensor = Array(Any, variable_lengths...)
+
 
     # Array indexed by each variable tick
     # Combine all of the measures into one, which will be split up after use
@@ -159,13 +168,16 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
     srand(seed)
 
     # Evaluate the measures with each combination of variable
-    result_tensor = Array(Any, variable_lengths...)
-    for (gen_ix, (gen_tick, gen_fn)) = enumerate(data_generators)
-        logstrln("%% Generator $gen_ix/$(length(data_generators)) \"$gen_tick\"", verbose)
+    for (density_ix, density) = enumerate(variables["generator_density"]),
+        (shape_ix, shape) = enumerate(variables["generator_shape"])
+
+        generator = data_generators[density_ix, shape_ix][2]
+
+        logstrln("%% Generator (den $density, shape $shape)", verbose)
         for iter_ix = 1:iterations
             logstrln("%% Iteration $iter_ix/$iterations", verbose)
             # build a SynthDatabase with gen_fn
-            all_data, all_labels, true_model = gen_fn(train_n + holdout_n)
+            all_data, all_labels, true_model = generator(train_n + holdout_n)
             train_data = all_data[:, 1:train_n]
             test_data = all_data[:, train_n+1:end]
             train_labels = all_labels[1:train_n]
@@ -176,22 +188,25 @@ function evaluate_measures(validation_measures :: Array{Tuple{ASCIIString, Funct
                                    test_labels,
                                    true_model)
 
-            for (model_ix, (model_tick, model_fn)) = enumerate(model_optimizers)
-                logstrln("%% Model optimizer $model_ix/$(length(model_optimizers)) \"$model_tick\"", verbose)
+            for (dist_ix, dist) = enumerate(variables["distribution"]),
+                (model_k_ix, model_k) = enumerate(variables["num_model_states"])
+
+                model_fn = model_optimizers[dist_ix, model_k_ix][2]
+                logstrln("%% Model optimizer (dist $dist, k $model_k)", verbose)
 
                 measure_results = evaluate_measure(joint_measure,
                                                    model_fn,
                                                    dataset)
 
-                for val_ix = 1:length(validation_measures)
-                    result_tensor[model_ix, gen_ix, val_ix, iter_ix] = measure_results[val_ix]
+                for val_ix = 1:length(variables["validation_measure"])
+                    result_tensor[dist_ix, model_k_ix, density_ix, shape_ix, val_ix, iter_ix] = measure_results[val_ix]
                 end
             end
         end
     end
 
-    (variable_labels,
-     variable_ticks,
+    (collect(keys(variables)),
+     collect(values(variables)),
      result_tensor)
 end
 
@@ -342,7 +357,7 @@ function parse_commandline()
 
     @add_arg_table s begin
         "--output-file", "-o"
-            help = "The relative or full path to a Julia serial dump file."
+            help = "The relative or full path to output a Julia serial dump file."
             required = true
         "--num-observations", "-n"
             help = "Length of the training and test synthetic datasets"
@@ -358,8 +373,7 @@ function parse_commandline()
             default = default_gen_k
         "--num-model-states"
             help = "Number of states in the fit models"
-            arg_type = Int
-            default = default_gen_k
+            default = [default_gen_k]
         "--num-model-restarts"
             help = "Number of random starting points to maximize each Baum-Welch over"
             arg_type = Int
@@ -380,6 +394,9 @@ Possibilities are: \"true\" (true model), \"diagonal\" (diagonal covariance matr
         "--validation-measures"
             help = "List (comma separated, no spaces) the validation measures to test models with. Possibilities: \"label_accuracy\" (hard label accuracy), \"edge_accuracy\" (hard edge accuracy), \"test_ll\" (test log-likelihood), \"enrichment_fold\" (network edge enrichment), \"edge_matches\" (boolean edge matches sorted by magnitude)"
             default = join(default_validation_measure_ids, ",")
+        "--shapes"
+            help = "List (comma separated, no spaces) the inverse covariance matrix shape at which to generate the synthetic data.\n"
+            default = join(default_shapes, ",")
         "--densities"
             help = "List (comma separated, no spaces) the off-diagonal inverse covariance matrix densities at which to generate the synthetic data.\n"
             default = join(default_densities, ",")
@@ -402,7 +419,7 @@ function synth_eval_from_cli()
     p = args["num-tracks"]
     model_restarts = args["num-model-restarts"]
     gen_k = args["num-gen-states"]
-    model_k = args["num-model-states"]
+    model_ks = map(int, split(args["num-model-states"], ","))
     model_verbose = args["model-verbose"]
     test_verbose = args["test-verbose"]
     iterations = args["iterations"]
@@ -413,16 +430,18 @@ function synth_eval_from_cli()
     validation_measures = Tuple{ASCIIString,Function}[(id, validation_measure_table[id])
                                                       for id = validation_measure_ids]
     densities = map(float, split(args["densities"], ","))
+    shapes = map(float, split(args["shapes"], ","))
 
     synth_validation(output_file,
                      n = n,
                      p = p,
                      model_restarts = model_restarts,
                      gen_k = gen_k,
-                     model_k = model_k,
+                     model_ks = model_ks,
                      emission_dists = emission_dists,
                      validation_measures = validation_measures,
                      densities = densities,
+                     shapes = shapes,
                      iterations = iterations,
                      test_verbose_flag = test_verbose,
                      model_verbose_flag = model_verbose)

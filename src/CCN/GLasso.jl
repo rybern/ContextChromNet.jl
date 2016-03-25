@@ -1,5 +1,5 @@
 module GLasso
-export glasso_cov
+export glasso_cov, glasso, universal_lambda
 
 using BaumWelchUtils
 
@@ -16,7 +16,7 @@ function glasso(cov, alpha)
 end
 
 #new
-function glasso_cov(data, weights, lambda = lambdaUni(size(data)...))
+function glasso_cov(data, weights, lambda = universal_lambda(size(data)...))
     n = size(data, 2)
     fullCov = cov(data, WeightVec(weights), vardim=2);
 
@@ -27,12 +27,12 @@ function glasso_cov(data, weights, lambda = lambdaUni(size(data)...))
     glasso(fullCov, rho)
 end
 
-function lambdaUni(p, n)
+function universal_lambda(p, n)
     sqrt(2 * n * log(p)) / 2
 end
 
 #old
-function glasso_cov_old(data, weights, lambda = lambdaUni(size(data)...))
+function glasso_cov_old(data, weights, lambda = universal_lambda(size(data)...))
     n = size(data, 2)
     fullCov = cov(data, WeightVec(weights), vardim=2);
 

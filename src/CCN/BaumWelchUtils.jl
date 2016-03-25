@@ -1,7 +1,29 @@
 module BaumWelchUtils
-export force_pos_def, labels_to_gamma, gamma_to_labels, model_to_networks, mat_network_sparsity, sorted_edges, unique_by, states_to_networks, label_confusion_matrix
+export force_pos_def, labels_to_gamma, gamma_to_labels, model_to_networks, mat_network_sparsity, sorted_edges, unique_by, states_to_networks, label_confusion_matrix, safe_mv_normal
 
 using HMMTypes
+using Distributions
+
+function safe_mv_normal(mu :: Array{Float64},
+                        cov :: Array{Float64, 2},
+                        check_singular = false)
+    try
+        if (check_singular && det(10000*cov) == 0)
+            println("Singular matrix encountered. Sample not long enough.")
+            println("Temporarily using identity cov.")
+            cov = eye(size(cov,1))
+        end
+
+        MvNormal(vec(mu), cov)
+    catch e
+        cov_ = force_pos_def(cov)
+        try
+            MvNormal(vec(mu), cov_)
+        catch e2
+            throw(e2)
+        end
+    end
+end
 
 function label_confusion_matrix(found_labels, found_k,
                                 true_labels, true_k)
