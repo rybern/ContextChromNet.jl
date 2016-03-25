@@ -27,8 +27,12 @@ function test_match_gamma_even()
 end
 
 function match_states(estimate, found_model, true_labels, true_model)
+    found_k = size(found_model.trans, 1)
+    true_k = size(true_model.trans, 1)
+
     found_labels = gamma_to_labels(estimate.gamma)
-    new_to_old = label_permutation(found_labels, true_labels)
+    new_to_old = label_permutation(found_labels, found_k,
+                                   true_labels, true_k)
     apply_permutation(new_to_old, estimate, found_model)
 end
 

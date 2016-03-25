@@ -14,12 +14,12 @@ function rand_HMM_model(p :: Integer,
                         k :: Integer;
                         mean_range = .1,
                         density = .3,
-                        shape = .5,
+                        shape = 30,
                         dwell_prob = 3/4)
     dists = Array(MvNormal, k)
     for i = 1:k
         mu = rand(p) * mean_range - mean_range/2;
-        cov = rand_cov(p, density)
+        cov = rand_cov(p, density, shape)
 
         dists[i] = MvNormal(mu, cov)
     end
@@ -130,7 +130,7 @@ function zero_rand_offdiag_pairs!(m, num_pairs_to_zero)
 end
 
 # From Scott. Thanks Scott!
-function rand_cov(n, net_density)
+function rand_cov(n, net_density, cond_number)
     IC = diagm(abs(randn(n)))
     for i = 1:n
         for j = 1:i
@@ -146,8 +146,22 @@ function rand_cov(n, net_density)
     if mineval < 0
         IC -= eye(n)*mineval*1.01
     end
-    C = inv(cholfact(IC))
+
+    IC_cond = set_cond_number(IC, cond_number)
+
+    C = inv(cholfact(IC_cond))
 #    Base.cov2cor!(C, sqrt(diag(C)))
+end
+
+function set_cond_number(m, c)
+    svs = svd(m)[2]
+    min_sv = svs[end]
+    max_sv = svs[1]
+
+    cs = c*c
+    d = (c * min_sv - max_sv) / (1 - c)
+
+    m + d * eye(size(m, 1))
 end
 
 function cov_network_density(m; eps = 1e-8)
