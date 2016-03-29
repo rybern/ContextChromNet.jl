@@ -432,7 +432,7 @@ function synth_eval_from_cli()
     densities = map(float, split(args["densities"], ","))
     shapes = map(float, split(args["shapes"], ","))
 
-    if !("num-model-states" in keys(args))
+    if ("num-model-states" in keys(args))
         model_ks = map(int, split(args["num-model-states"], ","))
     else
         model_ks = [gen_k]

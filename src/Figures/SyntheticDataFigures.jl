@@ -116,6 +116,47 @@ function plot_edge_accuracy_vs_density(vars, ticks, res, specs;
                title = "Edge Accuracy vs. Generating Density")
 end
 
+function plot_label_accuracy_vs_shape(vars, ticks, res, specs;
+                                     model_k_ind = 1,
+                                     density_ind = 1)
+    bars = result_bars(vars,
+                       ticks,
+                       res,
+                       Dict(MODEL_K_VARIABLE => model_k_ind,
+                            DENSITY_VARIABLE => density_ind,
+                            MEASURE_VARIABLE => findfirst(ticks[findfirst(vars, MEASURE_VARIABLE)],
+                                                          LABEL_ACCURACY_MEASURE)),
+                       SHAPE_VARIABLE,
+                       DISTRIBUTION_VARIABLE)
+
+    fig = axis(bars...,
+               legend = "upper right",
+               ylabel = "Label Accuracy",
+               xlabel = "Generating Network Shape",
+               title = "Label Accuracy vs. Generating Shape")
+end
+
+function plot_enrichment_vs_shape(vars, ticks, res, specs;
+                                  model_k_ind = 1,
+                                  density_ind = 1)
+    bars = result_bars(vars,
+                       ticks,
+                       res,
+                       Dict(MODEL_K_VARIABLE => model_k_ind,
+                            DENSITY_VARIABLE => density_ind,
+                            MEASURE_VARIABLE => findfirst(ticks[findfirst(vars, MEASURE_VARIABLE)],
+                                                          ENRICHMENT_FOLD_MEASURE)),
+                       SHAPE_VARIABLE,
+    DISTRIBUTION_VARIABLE,
+    process_elements = convert_mean)
+
+    fig = axis(bars...,
+               legend = "upper right",
+               ylabel = "Enrichment",
+               xlabel = "Generating Network Shape",
+               title = "Enrichment vs. Generating Shape")
+end
+
 function plot_test_ll_vs_model_k(vars, ticks, res, specs,
                                  density_ind = 1,
                                  shape_ind = 1)
