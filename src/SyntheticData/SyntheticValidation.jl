@@ -262,12 +262,13 @@ function best_networks(;
                        k = 5,
                        emission_dist = fit_full_cov,
                        density = 1.0,
+                       shape = 20,
                        seed = Void)
     if(seed != Void)
         srand(seed)
     end
 
-    true_model = rand_HMM_model(p, k, density = density, mean_range = 0)
+    true_model = rand_HMM_model(p, k, density = density, shape = shape, mean_range = 0)
     (data, true_labels) = rand_HMM_data(n, p, true_model)[1:2]
 
     gamma = labels_to_gamma(true_labels, k)
@@ -318,6 +319,7 @@ function synth_data_model(;
                           k = 5,
                           emission_dist = fit_full_cov,
                           density = 1.0,
+                          shape = 20,
                           match_states = true,
                           seed = Void,
                           verbose = false)
@@ -325,7 +327,7 @@ function synth_data_model(;
         srand(seed)
     end
 
-    true_model = rand_HMM_model(p, k, density = density, mean_range = 0)
+    true_model = rand_HMM_model(p, k, density = density, shape = shape, mean_range = 0)
     (data, true_labels) = rand_HMM_data(n, p, true_model)[1:2]
     (unordered_estimate, unordered_model, ll) = baum_welch(data, k, emission_dist,
                                                            verbose = verbose ? 0 : Void)
@@ -373,8 +375,7 @@ function parse_commandline()
             arg_type = Int
             default = default_gen_k
         "--num-model-states"
-            help = "Number of states in the fit models"
-            default = [default_gen_k]
+            help = "Number of states in the fit models. Matches num-gen-states by default."
         "--num-model-restarts"
             help = "Number of random starting points to maximize each Baum-Welch over"
             arg_type = Int
@@ -419,7 +420,6 @@ function synth_eval_from_cli()
     p = args["num-tracks"]
     model_restarts = args["num-model-restarts"]
     gen_k = args["num-gen-states"]
-    model_ks = map(int, split(args["num-model-states"], ","))
     model_verbose = args["model-verbose"]
     test_verbose = args["test-verbose"]
     iterations = args["iterations"]
@@ -431,6 +431,12 @@ function synth_eval_from_cli()
                                                       for id = validation_measure_ids]
     densities = map(float, split(args["densities"], ","))
     shapes = map(float, split(args["shapes"], ","))
+
+    if !("num-model-states" in keys(args))
+        model_ks = map(int, split(args["num-model-states"], ","))
+    else
+        model_ks = [gen_k]
+    end
 
     synth_validation(output_file,
                      n = n,
