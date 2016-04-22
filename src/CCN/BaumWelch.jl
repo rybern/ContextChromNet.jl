@@ -77,6 +77,14 @@ function baum_welch{N <: Number}(data :: DenseArray{N, 2},
                     is_converged = ll_convergence(.001) :: Function,
 #                    is_converged = iteration_convergence(5) :: Function,
                     verbose :: Union{Type{Void}, Integer} = Void)
+    if k == 1
+        gamma = ones(1, size(data, 2))
+        transition = ones(1, 1)
+        states = collect(fit_emissions(data, gamma))
+        model = HMMStateModel(states, transition)
+        ll = log_likelihood(data, k, model, emission_log_pdf)
+        return (HMMEstimate(gamma), HMMStateModel(states, transition), ll)
+    end
 
 
     logstr("Initial data sharing ... ", verbose)

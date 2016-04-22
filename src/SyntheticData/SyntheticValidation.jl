@@ -316,7 +316,8 @@ end
 function synth_data_model(;
                           n = 1000,
                           p = 15,
-                          k = 5,
+                          gen_k = 5,
+                          model_k = 5,
                           emission_dist = fit_full_cov,
                           density = 1.0,
                           shape = 20,
@@ -327,9 +328,9 @@ function synth_data_model(;
         srand(seed)
     end
 
-    true_model = rand_HMM_model(p, k, density = density, shape = shape, mean_range = 0)
+    true_model = rand_HMM_model(p, gen_k, density = density, shape = shape, mean_range = 0)
     (data, true_labels) = rand_HMM_data(n, p, true_model)[1:2]
-    (unordered_estimate, unordered_model, ll) = baum_welch(data, k, emission_dist,
+    (unordered_estimate, unordered_model, ll) = baum_welch(data, model_k, emission_dist,
                                                            verbose = verbose ? 0 : Void)
     (estimate, model) = StateMatching.match_states(unordered_estimate,
                                                    unordered_model,

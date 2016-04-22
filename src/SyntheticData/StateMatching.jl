@@ -26,6 +26,7 @@ function test_match_gamma_even()
     permuted_labels == true_labels
 end
 
+# this turns out to be undefined in general, but it's only being used for label matching, so just return the permuted labels
 function match_states(estimate, found_model, true_labels, true_model)
     found_k = size(found_model.trans, 1)
     true_k = size(true_model.trans, 1)
@@ -154,11 +155,10 @@ function optimal_label_permutation(labels1, labels2, k)
 end
 
 function apply_permutation(old_to_new, estimate, model)
-    (p, n) = size(estimate.gamma)
-    k = size(model.trans, 1)
+    (k, n) = size(estimate.gamma)
     new_to_old = [findfirst(old_to_new, i) for i = 1:k]
 
-    new_gamma = Array(Float64, p, n)
+    new_gamma = Array(Float64, k, n)
 
     for i = 1:n
         for j = 1:k

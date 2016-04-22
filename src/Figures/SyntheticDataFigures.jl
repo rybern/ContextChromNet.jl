@@ -4,6 +4,7 @@ using PyPlot.(savefig)
 using SimplePlot
 using HypothesisTests
 using ArgParse
+using DataStructures
 
 function build_figures_v1(results_file,
                        output_directory;
@@ -95,6 +96,39 @@ function tensor_bars(tensor,
             for (line_ix, line_name) = enumerate(line_ticks)]
 end
 
+function runPlots()
+    plots = []
+
+    addPlot = (dump, plotFn) -> push!(plots, () -> plotFn(collect(dump[1]), collect(dump[2]), dump[3], dump[4]))
+
+    vary_model = open(deserialize, "saved_outputs/synth-vary-model-3-29-16.dump")
+    vary_shape = open(deserialize, "saved_outputs/synth-vary-shape-3-26-16.dump")
+    vary_shape1 = open(deserialize, "saved_outputs/synth-vary-shape-mk1-3-29-16.dump")
+#    vary_density = open(deserialize, "saved_outputs/3-23-16-synth-test.dump")
+#    vary_density = open(deserialize, "saved_outputs/synth-full-2-26-16-final.dump")
+
+    # number of model states
+    addPlot(vary_model, plot_test_ll_vs_model_k)
+    addPlot(vary_model, plot_active_states_vs_model_k)
+
+    # number of shape states, default model state
+    addPlot(vary_shape, plot_label_accuracy_vs_shape)
+    addPlot(vary_shape, plot_enrichment_vs_shape)
+
+    # number of shape states, 1 model state
+    addPlot(vary_shape1, plot_label_accuracy_vs_shape)
+    addPlot(vary_shape1, plot_enrichment_vs_shape)
+
+    # density of generating states
+#    addPlot(vary_density, plot_edge_accuracy_vs_density)
+#    addPlot(vary_density, plot_enrichment_vs_density)
+#    addPlot(vary_density, plot_label_accuracy_vs_density)
+
+#    addPlot(vary_density, plot_test_ll_vs_density)
+
+    plots
+end
+
 function plot_edge_accuracy_vs_density(vars, ticks, res, specs;
                                        model_k_ind = 1,
                                        shape_ind = 1)
@@ -114,6 +148,69 @@ function plot_edge_accuracy_vs_density(vars, ticks, res, specs;
                ylabel = "Edge Accuracy",
                xlabel = "Generating Network Density",
                title = "Edge Accuracy vs. Generating Density")
+end
+
+function plot_label_accuracy_vs_density(vars, ticks, res, specs;
+                                       model_k_ind = 1,
+                                       shape_ind = 1)
+    bars = result_bars(vars,
+                       ticks,
+                       res,
+                       Dict(MODEL_K_VARIABLE => model_k_ind,
+                            SHAPE_VARIABLE => shape_ind,
+                            MEASURE_VARIABLE => findfirst(ticks[findfirst(vars, MEASURE_VARIABLE)],
+                                                          LABEL_ACCURACY_MEASURE)),
+                       DENSITY_VARIABLE,
+                       DISTRIBUTION_VARIABLE,
+                       process_elements = convert_mean)
+
+    fig = axis(bars...,
+               legend = "upper right",
+               ylabel = "Label Accuracy",
+               xlabel = "Generating Network Density",
+               title = "Label Accuracy vs. Generating Density")
+end
+
+function plot_test_ll_vs_density(vars, ticks, res, specs;
+                                       model_k_ind = 1,
+                                       shape_ind = 1)
+    bars = result_bars(vars,
+                       ticks,
+                       res,
+                       Dict(MODEL_K_VARIABLE => model_k_ind,
+                            SHAPE_VARIABLE => shape_ind,
+                            MEASURE_VARIABLE => findfirst(ticks[findfirst(vars, MEASURE_VARIABLE)],
+                                                          TEST_LL_MEASURE)),
+                       DENSITY_VARIABLE,
+                       DISTRIBUTION_VARIABLE,
+                       process_elements = convert_mean)
+
+    fig = axis(bars...,
+               legend = "upper right",
+               ylabel = "Test Log-Likelihood",
+               xlabel = "Generating Network Density",
+               title = "Test Log-Likelihood vs. Generating Density")
+end
+
+function plot_enrichment_vs_density(vars, ticks, res, specs;
+                                       model_k_ind = 1,
+                                       shape_ind = 1)
+    bars = result_bars(vars,
+                       ticks,
+                       res,
+                       Dict(MODEL_K_VARIABLE => model_k_ind,
+                            SHAPE_VARIABLE => shape_ind,
+                            MEASURE_VARIABLE => findfirst(ticks[findfirst(vars, MEASURE_VARIABLE)],
+                                                          ENRICHMENT_FOLD_MEASURE)),
+                       DENSITY_VARIABLE,
+                       DISTRIBUTION_VARIABLE,
+                       process_elements = convert_mean)
+
+    fig = axis(bars...,
+               legend = "upper right",
+               ylabel = "Enrichment Fold",
+               xlabel = "Generating Network Density",
+               title = "Enrichment Fold vs. Generating Density")
 end
 
 function plot_label_accuracy_vs_shape(vars, ticks, res, specs;
@@ -155,6 +252,26 @@ function plot_enrichment_vs_shape(vars, ticks, res, specs;
                ylabel = "Enrichment",
                xlabel = "Generating Network Shape",
                title = "Enrichment vs. Generating Shape")
+end
+
+function plot_active_states_vs_model_k(vars, ticks, res, specs,
+                                       density_ind = 1,
+                                       shape_ind = 1)
+    bars = result_bars(vars,
+                       ticks,
+                       res,
+                       Dict(DENSITY_VARIABLE => density_ind,
+                            SHAPE_VARIABLE => shape_ind,
+                            MEASURE_VARIABLE => findfirst(ticks[findfirst(vars, MEASURE_VARIABLE)],
+                                                          ACTIVE_STATES_MEASURE)),
+                       MODEL_K_VARIABLE,
+                       DISTRIBUTION_VARIABLE)
+
+    fig = axis(bars...,
+               legend = "upper right",
+               ylabel = "Avg. # Active States",
+               xlabel = "Number of Model States",
+               title = "Active States vs. Model K (True K: $(specs[3]))")
 end
 
 function plot_test_ll_vs_model_k(vars, ticks, res, specs,
@@ -277,11 +394,13 @@ end
 # measure_names
 EDGE_ACCURACY_MEASURE = "edge_accuracy"
 LABEL_ACCURACY_MEASURE = "label_accuracy"
+ACTIVE_STATES_MEASURE = "num_active_states"
 TEST_LL_MEASURE = "test_ll"
 ENRICHMENT_FOLD_MEASURE = "enrichment_fold"
 EDGE_MATCHES_MEASURE = "edge_matches"
 all_measures = [EDGE_ACCURACY_MEASURE,
                 LABEL_ACCURACY_MEASURE,
+                ACTIVE_STATES_MEASURE,
                 TEST_LL_MEASURE,
                 ENRICHMENT_FOLD_MEASURE,
                 EDGE_MATCHES_MEASURE]
