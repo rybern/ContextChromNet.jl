@@ -54,4 +54,42 @@ function learn_CCN(data,
     model_optimizer(data, k)
 end
 
+function prune_output_dir(dir)
+    function is_output(output_dir)
+        full_dir = join([dir, output_dir], "/")
+
+        if !isdir(full_dir)
+            return false
+        end
+
+        subdirs = readdir(full_dir)
+        return (in(estimate_filename, subdirs) &&
+                in(loglikelihood_filename, subdirs) &&
+                in(model_filename, subdirs))
+    end
+
+    function output_ll(output_dir)
+        open(deserialize, join([dir, output_dir, loglikelihood_filename], "/"))
+    end
+
+    subfiles = readdir(dir)
+    outputs = filter(is_output, subfiles)
+    lls = map(output_ll, outputs)
+    perm = sortperm(-lls)
+    sorted_outputs = outputs[perm]
+
+    good_dir = sorted_outputs[1]
+    for file in readdir(join([dir, good_dir], "/"))
+        mv(join([dir, good_dir, file], "/"),
+           join([dir, file], "/"),
+           remove_destination = true)
+    end
+
+    for output_dir in outputs
+        rm(join([dir, output_dir], "/"), recursive = true)
+    end
+
+    open(s -> serialize(s, lls), join([dir, "all_lls.dump"], "/"), "w")
+end
+
 end
